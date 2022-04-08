@@ -15,9 +15,10 @@ defmodule Restaurant.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: Restaurant.PubSub},
       # Start the Endpoint (http/https)
-      RestaurantWeb.Endpoint
+      RestaurantWeb.Endpoint,
       # Start a worker by calling: Restaurant.Worker.start_link(arg)
       # {Restaurant.Worker, arg}
+      {Restaurant.Kitchen.Stove, 4}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

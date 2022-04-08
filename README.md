@@ -1,4 +1,5 @@
 # Restaurant
+Implementing Restaurant with Elixir actor model.
 
 To start your Phoenix server:
 
