@@ -10,6 +10,10 @@ defmodule Restaurant.Kitchen.Burner do
     GenServer.start_link(__MODULE__, operating_time)
   end
 
+  def show_remaining_time(pid) do
+    GenServer.call(pid, :operating_time)
+  end
+
   # Server
   def init(operating_time) do
     {:ok, operating_time, {:continue, :heat}}
@@ -22,5 +26,9 @@ defmodule Restaurant.Kitchen.Burner do
   def handle_continue(:heat, remaining_time) do
     Process.send_after(self(), :heat, 1000)
     {:noreply, remaining_time - 1}
+  end
+
+  def handle_call(:operating_time, _from, operating_time) do
+    {:reply, operating_time, operating_time}
   end
 end
