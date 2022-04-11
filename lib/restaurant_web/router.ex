@@ -17,7 +17,7 @@ defmodule RestaurantWeb.Router do
   scope "/", RestaurantWeb do
     pipe_through :browser
 
-    get "/", PageController, :index
+    live "/", RestaurantLive, :page
   end
 
   # Other scopes may use custom stacks.
