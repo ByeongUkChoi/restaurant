@@ -1,34 +1,33 @@
 defmodule Restaurant.Kitchen.Burner do
   @moduledoc """
-  Heat for a period of time(second)
+  turn on/off
   """
   use GenServer, restart: :transient
 
   # API
 
-  def start_link(operating_time) do
-    GenServer.start_link(__MODULE__, operating_time)
+  def start_link(_) do
+    GenServer.start_link(__MODULE__, :no_args)
   end
 
-  def show_remaining_time(pid) do
-    GenServer.call(pid, :operating_time)
+  def turn_on() do
+    GenServer.cast(__MODULE__, :turn_on)
+  end
+
+  def turn_off() do
+    GenServer.cast(__MODULE__, :turn_off)
   end
 
   # Server
-  def init(operating_time) do
-    {:ok, operating_time, {:continue, :heat}}
+  def init(:no_args) do
+    {:ok, false}
   end
 
-  def handle_continue(:heat, 0) do
-    {:stop, :normal, nil}
+  def handle_cast(:turn_on, _status) do
+    {:noreply, true}
   end
 
-  def handle_continue(:heat, remaining_time) do
-    Process.send_after(self(), :heat, 1000)
-    {:noreply, remaining_time - 1}
-  end
-
-  def handle_call(:operating_time, _from, operating_time) do
-    {:reply, operating_time, operating_time}
+  def handle_cast(:turn_off, _status) do
+    {:noreply, false}
   end
 end
