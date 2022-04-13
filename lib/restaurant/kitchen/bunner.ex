@@ -1,6 +1,6 @@
 defmodule Restaurant.Kitchen.Burner do
   @moduledoc """
-  turn on/off
+  on/off
   """
   use GenServer, restart: :transient
 
@@ -10,24 +10,16 @@ defmodule Restaurant.Kitchen.Burner do
     GenServer.start_link(__MODULE__, :no_args)
   end
 
-  def turn_on() do
-    GenServer.cast(__MODULE__, :turn_on)
-  end
-
   def turn_off() do
     GenServer.cast(__MODULE__, :turn_off)
   end
 
   # Server
   def init(:no_args) do
-    {:ok, false}
+    {:ok, nil}
   end
 
-  def handle_cast(:turn_on, _status) do
-    {:noreply, true}
-  end
-
-  def handle_cast(:turn_off, _status) do
-    {:noreply, false}
+  def handle_cast(:turn_off, _state) do
+    {:stop, :normal, nil}
   end
 end

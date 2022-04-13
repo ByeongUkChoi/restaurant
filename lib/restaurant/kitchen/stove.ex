@@ -13,6 +13,6 @@ defmodule Restaurant.Kitchen.Stove do
 
   # Server
   def init(burner_count) do
-    {:ok, burner_count}
+    {:ok, count: burner_count, burners: MapSet.new()}
   end
 end
