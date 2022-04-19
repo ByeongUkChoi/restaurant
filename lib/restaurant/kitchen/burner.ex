@@ -10,16 +10,24 @@ defmodule Restaurant.Kitchen.Burner do
     GenServer.start_link(__MODULE__, :no_args)
   end
 
+  def turn_on() do
+    GenServer.call(__MODULE__, :turn_on)
+  end
+
   def turn_off() do
-    GenServer.cast(__MODULE__, :turn_off)
+    GenServer.call(__MODULE__, :turn_off)
   end
 
   # Server
   def init(:no_args) do
-    {:ok, nil}
+    {:ok, false}
   end
 
-  def handle_cast(:turn_off, _state) do
-    {:stop, :normal, nil}
+  def handle_call(:turn_on, _from, _state) do
+    {:reply, :ok, true}
+  end
+
+  def handle_call(:turn_off, _from, _state) do
+    {:reply, :ok, false}
   end
 end
