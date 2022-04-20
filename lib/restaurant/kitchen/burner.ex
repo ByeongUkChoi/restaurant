@@ -10,12 +10,12 @@ defmodule Restaurant.Kitchen.Burner do
     GenServer.start_link(__MODULE__, :no_args)
   end
 
-  def turn_on() do
-    GenServer.call(__MODULE__, :turn_on)
+  def turn_on(pid) do
+    GenServer.call(pid, :turn_on)
   end
 
-  def turn_off() do
-    GenServer.call(__MODULE__, :turn_off)
+  def turn_off(pid) do
+    GenServer.call(pid, :turn_off)
   end
 
   # Server
