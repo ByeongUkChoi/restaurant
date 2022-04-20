@@ -13,6 +13,10 @@ defmodule Restaurant.Kitchen.Stove do
     GenServer.start_link(__MODULE__, burner_count, name: __MODULE__)
   end
 
+  def get_burners_status() do
+    GenServer.call(__MODULE__, :get_burners_status)
+  end
+
   def turn_on(index, time) do
     GenServer.call(__MODULE__, {:turn_on, index, time})
   end
@@ -29,7 +33,11 @@ defmodule Restaurant.Kitchen.Stove do
     {:ok, burners}
   end
 
-  def handle_cast({:turn_on, index, _time}, _from, burners) do
+  def handle_call(:get_burners_status, burners) do
+    {:reply, Burner.get_status(burners), burners}
+  end
+
+  def handle_cast({:turn_on, index, _time}, burners) do
     burners
     |> Enum.at(index)
     |> Burner.turn_on()

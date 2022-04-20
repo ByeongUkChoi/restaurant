@@ -10,6 +10,10 @@ defmodule Restaurant.Kitchen.Burner do
     GenServer.start_link(__MODULE__, :no_args)
   end
 
+  def get_status(pid) do
+    GenServer.call(pid, :get_status)
+  end
+
   def turn_on(pid) do
     GenServer.call(pid, :turn_on)
   end
@@ -21,6 +25,10 @@ defmodule Restaurant.Kitchen.Burner do
   # Server
   def init(:no_args) do
     {:ok, false}
+  end
+
+  def handle_call(:get_status, _from, state) do
+    {:reply, state, state}
   end
 
   def handle_call(:turn_on, _from, _state) do
