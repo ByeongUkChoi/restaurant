@@ -33,8 +33,8 @@ defmodule Restaurant.Kitchen.Stove do
     {:ok, burners}
   end
 
-  def handle_call(:get_burners_status, burners) do
-    {:reply, Burner.get_status(burners), burners}
+  def handle_call(:get_burners_status, _from, burners) do
+    {:reply, Enum.map(burners, &Burner.get_status/1), burners}
   end
 
   def handle_cast({:turn_on, index, _time}, burners) do
