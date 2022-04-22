@@ -18,7 +18,7 @@ defmodule Restaurant.Kitchen.Stove do
   end
 
   def turn_on(index, time) do
-    GenServer.call(__MODULE__, {:turn_on, index, time})
+    GenServer.cast(__MODULE__, {:turn_on, index, time})
   end
 
   # Server

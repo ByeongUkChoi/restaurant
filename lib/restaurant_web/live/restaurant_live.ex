@@ -1,6 +1,8 @@
 defmodule RestaurantWeb.RestaurantLive do
   use RestaurantWeb, :live_view
 
+  import Transformer
+
   alias Restaurant.Kitchen.Stove
 
   def render(assigns) do
@@ -11,10 +13,14 @@ defmodule RestaurantWeb.RestaurantLive do
       <table>
         <th>index</th>
         <th>status</th>
-        <%= for {status, index} <- Enum.with_index(@burners_status, 1) do %>
+        <th>control</th>
+        <%= for {status, index} <- Enum.with_index(@burners_status) do %>
           <tr>
-            <td><%= index %></td>
+            <td><%= index + 1 %></td>
             <td><%= status %></td>
+            <td>
+              <button phx-click="turn_on" phx-value-index={index}>ON</button>
+            </td>
           </tr>
         <% end %>
       </table>
@@ -24,5 +30,13 @@ defmodule RestaurantWeb.RestaurantLive do
 
   def mount(_params, _session, socket) do
     {:ok, assign(socket, burners_status: Stove.get_burners_status())}
+  end
+
+  def handle_event("turn_on", %{"index" => index}, socket) do
+    index
+    |> to_integer_or()
+    |> Stove.turn_on(0)
+
+    {:noreply, socket}
   end
 end
