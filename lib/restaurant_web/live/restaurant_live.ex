@@ -13,11 +13,13 @@ defmodule RestaurantWeb.RestaurantLive do
       <table>
         <th>index</th>
         <th>status</th>
+        <th>timer</th>
         <th>control</th>
-        <%= for {status, index} <- Enum.with_index(@burners_status) do %>
+        <%= for {burner, index} <- Enum.with_index(@burners) do %>
           <tr>
             <td><%= index + 1 %></td>
-            <td><%= status %></td>
+            <td><%= burner.status %></td>
+            <td><%= if burner.status, do: burner.timer, else: "-" %></td>
             <td>
               <button phx-click="turn_on" phx-value-index={index}>ON</button>
             </td>
@@ -29,7 +31,7 @@ defmodule RestaurantWeb.RestaurantLive do
   end
 
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, burners_status: Stove.get_burners_status())}
+    {:ok, assign(socket, burners: Stove.get_burners())}
   end
 
   def handle_event("turn_on", %{"index" => index}, socket) do
