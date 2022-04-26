@@ -22,6 +22,8 @@ defmodule RestaurantWeb.RestaurantLive do
             <td><%= if burner.status, do: burner.timer, else: "-" %></td>
             <td>
             <%= if burner.status do %>
+              <button phx-click="plus_timer" phx-value-index={index}>+</button>
+              <button phx-click="minus_timer" phx-value-index={index}>-</button>
               <button phx-click="turn_off" phx-value-index={index}>OFF</button>
             <% else %>
               <button phx-click="turn_on" phx-value-index={index}>ON</button>
@@ -41,7 +43,7 @@ defmodule RestaurantWeb.RestaurantLive do
   def handle_event("turn_on", %{"index" => index}, socket) do
     index
     |> to_integer_or()
-    |> Stove.turn_on(0)
+    |> Stove.turn_on(30)
 
     {:noreply, assign(socket, burners: get_burners())}
   end
@@ -50,6 +52,22 @@ defmodule RestaurantWeb.RestaurantLive do
     index
     |> to_integer_or()
     |> Stove.turn_off()
+
+    {:noreply, assign(socket, burners: get_burners())}
+  end
+
+  def handle_event("plus_timer", %{"index" => index}, socket) do
+    index
+    |> to_integer_or()
+    |> Stove.increase_timer(30)
+
+    {:noreply, assign(socket, burners: get_burners())}
+  end
+
+  def handle_event("minus_timer", %{"index" => index}, socket) do
+    index
+    |> to_integer_or()
+    |> Stove.decrease_timer(30)
 
     {:noreply, assign(socket, burners: get_burners())}
   end
