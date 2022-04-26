@@ -56,11 +56,7 @@ defmodule Restaurant.Kitchen.Stove do
   def handle_cast({:turn_on, index, time}, burners) do
     %{pid: pid} = Enum.at(burners, index)
     Burner.turn_on(pid)
-
-    if time > 0 do
-      Process.send_after(self(), {:timer, pid}, 0)
-    end
-
+    Process.send_after(self(), {:timer, pid}, 0)
     {:noreply, update_burners(burners, pid, %{status: true, timer: time})}
   end
 
@@ -83,6 +79,16 @@ defmodule Restaurant.Kitchen.Stove do
     {:noreply, update_burners(burners, pid, %{timer: remaining_time - time})}
   end
 
+  def handle_info({:timer, pid}, burners) do
+    %{timer: remaining_time} = Enum.find(burners, &(&1.pid == pid))
+
+    if remaining_time > 1 do
+      Process.send_after(self(), {:timer, pid}, 1000)
+    end
+
+    {:noreply, update_burners(burners, pid, %{timer: remaining_time - 1})}
+  end
+
   defp update_burners(burners, pid, params) do
     status = params[:status]
     time = params[:timer]
@@ -99,15 +105,5 @@ defmodule Restaurant.Kitchen.Stove do
       %{pid: ^pid} = burner -> burner |> put_status.(status) |> put_timer.(time)
       burner -> burner
     end)
-  end
-
-  def handle_continue({:timer, pid}, 0) do
-    Burner.turn_off(pid)
-    {:stop, :normal, nil}
-  end
-
-  def handle_continue({:timer, burner}, remaining_time) do
-    Process.send_after(self(), {:timer, burner}, 1000)
-    {:noreply, remaining_time - 1}
   end
 end
