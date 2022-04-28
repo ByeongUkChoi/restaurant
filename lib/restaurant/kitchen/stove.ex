@@ -76,7 +76,14 @@ defmodule Restaurant.Kitchen.Stove do
   def handle_cast({:decrease_timer, index, time}, burners) do
     %{pid: pid, timer: remaining_time} = Enum.at(burners, index)
 
-    {:noreply, update_burners(burners, pid, %{timer: remaining_time - time})}
+    update_time =
+      if remaining_time - time >= 0 do
+        remaining_time - time
+      else
+        0
+      end
+
+    {:noreply, update_burners(burners, pid, %{timer: update_time})}
   end
 
   def handle_info({:timer, pid}, burners) do
