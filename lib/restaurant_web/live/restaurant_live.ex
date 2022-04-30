@@ -4,11 +4,11 @@ defmodule RestaurantWeb.RestaurantLive do
   import Transformer
 
   alias Restaurant.Kitchen.Stove
-  alias RestaurantWeb.RestaurantLive.StoveComponent
 
   def render(assigns) do
     ~H"""
-    <.live_component module={StoveComponent} id={StoveComponent} burners={@burners} />
+    <.live_component module={RestaurantWeb.RestaurantLive.KioskComponent} id="kiosk" />
+    <.live_component module={RestaurantWeb.RestaurantLive.StoveComponent} id="stove" burners={@burners} />
     """
   end
 
