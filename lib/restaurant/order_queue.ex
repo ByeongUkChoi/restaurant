@@ -10,7 +10,7 @@ defmodule Restaurant.OrderQueue do
   end
 
   def enqueue(item) do
-    GenServer.call(__MODULE__, {:enqueue, item})
+    GenServer.cast(__MODULE__, {:enqueue, item})
   end
 
   def denqueue() do
@@ -18,7 +18,7 @@ defmodule Restaurant.OrderQueue do
   end
 
   def list() do
-    GenServer.cast(__MODULE__, :list)
+    GenServer.call(__MODULE__, :list)
   end
 
   # Server

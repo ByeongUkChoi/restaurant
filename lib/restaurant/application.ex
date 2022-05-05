@@ -18,7 +18,8 @@ defmodule Restaurant.Application do
       RestaurantWeb.Endpoint,
       # Start a worker by calling: Restaurant.Worker.start_link(arg)
       # {Restaurant.Worker, arg}
-      {Restaurant.Kitchen.Stove, 4}
+      {Restaurant.Kitchen.Stove, 4},
+      Restaurant.OrderQueue
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
