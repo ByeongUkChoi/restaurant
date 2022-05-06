@@ -28,6 +28,14 @@ defmodule RestaurantWeb.RestaurantLive do
     {:noreply, assign(socket, burners: get_burners(), orders: get_orders())}
   end
 
+  def handle_event("order", %{"menu_id" => menu_id_str}, socket) do
+    with menu_id when is_integer(menu_id) <- Transformer.to_integer_or(menu_id_str) do
+      menu = Orders.get_menu(menu_id)
+      OrderQueue.enqueue(menu)
+      {:noreply, assign(socket, burners: get_burners(), orders: get_orders())}
+    end
+  end
+
   def handle_event("turn_on", %{"index" => index}, socket) do
     index
     |> to_integer_or()

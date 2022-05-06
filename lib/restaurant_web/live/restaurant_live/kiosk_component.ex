@@ -13,6 +13,9 @@ defmodule RestaurantWeb.RestaurantLive.KioskComponent do
           <tr>
             <td><%= menu.name %></td>
             <td><%= menu.price %></td>
+            <td>
+              <button phx-click="order" phx-value-menu_id={menu.id}>ORDER</button>
+            </td>
           </tr>
         <% end %>
       </table>
