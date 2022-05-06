@@ -4,11 +4,12 @@ defmodule RestaurantWeb.RestaurantLive do
   import Transformer
 
   alias Restaurant.Kitchen.Stove
+  alias Restaurant.Order.Orders
   alias Restaurant.OrderQueue
 
   def render(assigns) do
     ~H"""
-    <.live_component module={RestaurantWeb.RestaurantLive.KioskComponent} id="kiosk" />
+    <.live_component module={RestaurantWeb.RestaurantLive.KioskComponent} id="kiosk" menus={@menus} />
     <.live_component module={RestaurantWeb.RestaurantLive.OrderQueueComponent} id="order_queue" orders={@orders}/>
     <.live_component module={RestaurantWeb.RestaurantLive.StoveComponent} id="stove" burners={@burners} />
     """
@@ -16,7 +17,7 @@ defmodule RestaurantWeb.RestaurantLive do
 
   def mount(_params, _session, socket) do
     start_timer(1000)
-    {:ok, assign(socket, burners: get_burners(), orders: get_orders())}
+    {:ok, assign(socket, burners: get_burners(), orders: get_orders(), menus: get_menus())}
   end
 
   defp start_timer(interval) do
@@ -57,6 +58,10 @@ defmodule RestaurantWeb.RestaurantLive do
     |> Stove.decrease_timer(30)
 
     {:noreply, assign(socket, burners: get_burners(), orders: get_orders())}
+  end
+
+  defp get_menus() do
+    Orders.get_menus()
   end
 
   defp get_burners() do

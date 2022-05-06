@@ -7,19 +7,14 @@ defmodule RestaurantWeb.RestaurantLive.KioskComponent do
       <label>menu</label>
       <table>
         <th>name</th>
+        <th>price</th>
         <th></th>
+        <%= for menu <- @menus do %>
           <tr>
-            <td>test1</td>
-            <td>
-              <button>order</button>
-            </td>
+            <td><%= menu.name %></td>
+            <td><%= menu.price %></td>
           </tr>
-          <tr>
-            <td>test2</td>
-            <td>
-              <button>order</button>
-            </td>
-          </tr>
+        <% end %>
       </table>
     </div>
     """
