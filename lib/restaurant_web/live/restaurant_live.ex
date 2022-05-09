@@ -4,6 +4,7 @@ defmodule RestaurantWeb.RestaurantLive do
   import Transformer
 
   alias Restaurant.Kitchen.Stove
+  alias Restaurant.Kitchen.EspressoMachine
   alias Restaurant.Order.Orders
   alias Restaurant.OrderQueue
 
@@ -11,6 +12,7 @@ defmodule RestaurantWeb.RestaurantLive do
     ~H"""
     <.live_component module={RestaurantWeb.RestaurantLive.KioskComponent} id="kiosk" menus={@menus} />
     <.live_component module={RestaurantWeb.RestaurantLive.OrderQueueComponent} id="order_queue" orders={@orders}/>
+    <.live_component module={RestaurantWeb.RestaurantLive.EspressoMachineComponent} id="espresso_machine" />
     <.live_component module={RestaurantWeb.RestaurantLive.StoveComponent} id="stove" burners={@burners} />
     """
   end
@@ -65,6 +67,11 @@ defmodule RestaurantWeb.RestaurantLive do
     |> to_integer_or()
     |> Stove.decrease_timer(30)
 
+    {:noreply, assign(socket, burners: get_burners(), orders: get_orders())}
+  end
+
+  def handle_event("extract_espresso", _, socket) do
+    EspressoMachine.extract()
     {:noreply, assign(socket, burners: get_burners(), orders: get_orders())}
   end
 
