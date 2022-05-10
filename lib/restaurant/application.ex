@@ -19,7 +19,7 @@ defmodule Restaurant.Application do
       # Start a worker by calling: Restaurant.Worker.start_link(arg)
       # {Restaurant.Worker, arg}
       {Restaurant.Kitchen.Stove, 4},
-      Restaurant.Kitchen.EspressoMachine,
+      {Restaurant.Kitchen.EspressoMachine, 3},
       Restaurant.OrderQueue
     ]
 
