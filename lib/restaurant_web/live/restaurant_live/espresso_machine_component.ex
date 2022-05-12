@@ -6,16 +6,20 @@ defmodule RestaurantWeb.RestaurantLive.EspressoMachineComponent do
     <div>
       <label>espresso machine</label>
       <table>
-        <th>extract</th>
+        <th>id</th>
         <th>status</th>
-        <tr>
-          <td>
-            <button phx-click="extract_espresso">extract</button>
-          </td>
-          <td>
-            <%= @status %>
-          </td>
-        </tr>
+        <th>timer</th>
+        <th>extract</th>
+        <%= for group <- @state.groups do %>
+          <tr>
+            <td><%= group.id %></td>
+            <td></td>
+            <td><%= group.time %></td>
+            <td>
+              <button phx-click="extract_espresso" phx-value-id={group.id}>extract</button>
+            </td>
+          </tr>
+        <% end %>
       </table>
     </div>
     """

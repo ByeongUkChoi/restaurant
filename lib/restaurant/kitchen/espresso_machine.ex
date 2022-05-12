@@ -18,8 +18,8 @@ defmodule Restaurant.Kitchen.EspressoMachine do
     GenServer.cast(__MODULE__, :extract)
   end
 
-  def status() do
-    GenServer.call(__MODULE__, :status)
+  def state() do
+    GenServer.call(__MODULE__, :state)
   end
 
   # Server
@@ -37,7 +37,7 @@ defmodule Restaurant.Kitchen.EspressoMachine do
     {:noreply, remaining_time}
   end
 
-  def handle_call(:status, _from, remaining_time) do
+  def handle_call(:state, _from, remaining_time) do
     {:reply, remaining_time, remaining_time}
   end
 
