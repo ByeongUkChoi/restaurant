@@ -8,14 +8,15 @@ defmodule Restaurant.Kitchen.EspressoMachine do
           group_count: non_neg_integer(),
           groups: list(%{required(:id) => integer(), required(:time) => non_neg_integer()})
         }
+  @extract_time 15
 
   # API
   def start_link(group_count) do
     GenServer.start_link(__MODULE__, group_count, name: __MODULE__)
   end
 
-  def extract() do
-    GenServer.cast(__MODULE__, :extract)
+  def extract(group_id) do
+    GenServer.cast(__MODULE__, {:extract, group_id})
   end
 
   def state() do
@@ -28,17 +29,26 @@ defmodule Restaurant.Kitchen.EspressoMachine do
     {:ok, state}
   end
 
-  def handle_cast(:extract, nil) do
-    Process.send_after(self(), :timer, 1000)
-    {:noreply, 30}
+  def handle_cast({:extract, group_id}, state) do
+    state =
+      state
+      |> Map.update!(:groups, fn groups ->
+        groups
+        |> Enum.map(fn
+          %{id: ^group_id, time: 0} = group ->
+            Process.send_after(self(), :timer, 1000)
+            Map.put(group, :time, @extract_time)
+
+          group ->
+            group
+        end)
+      end)
+
+    {:noreply, state}
   end
 
-  def handle_cast(:extract, remaining_time) do
-    {:noreply, remaining_time}
-  end
-
-  def handle_call(:state, _from, remaining_time) do
-    {:reply, remaining_time, remaining_time}
+  def handle_call(:state, _from, state) do
+    {:reply, state, state}
   end
 
   def handle_info({:timer, id}, state) do

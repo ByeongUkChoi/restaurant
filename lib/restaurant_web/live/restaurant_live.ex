@@ -108,8 +108,8 @@ defmodule RestaurantWeb.RestaurantLive do
      )}
   end
 
-  def handle_event("extract_espresso", _, socket) do
-    EspressoMachine.extract()
+  def handle_event("extract_espresso", %{"id" => id}, socket) do
+    id |> to_integer_or() |> EspressoMachine.extract()
 
     {:noreply,
      assign(socket,
