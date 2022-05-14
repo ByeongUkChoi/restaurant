@@ -36,7 +36,7 @@ defmodule Restaurant.Kitchen.EspressoMachine do
         groups
         |> Enum.map(fn
           %{id: ^group_id, time: 0} = group ->
-            Process.send_after(self(), :timer, 1000)
+            Process.send_after(self(), {:timer, group_id}, 0)
             Map.put(group, :time, @extract_time)
 
           group ->
@@ -51,15 +51,25 @@ defmodule Restaurant.Kitchen.EspressoMachine do
     {:reply, state, state}
   end
 
-  def handle_info({:timer, id}, state) do
-    remaining_time = Enum.find_value(state, &(&1.id == id && &1.time))
+  def handle_info({:timer, group_id}, state) do
+    state =
+      state
+      |> Map.update!(:groups, fn groups ->
+        groups
+        |> Enum.map(fn
+          %{id: ^group_id, time: 0} = group ->
+            group
 
-    if remaining_time > 0 do
-      Process.send_after(self(), {:timer, id}, 1000)
-      update_time = if remaining_time - 1 > 0, do: remaining_time - 1, else: 0
-      {:noreply, update_time}
-    else
-      {:noreply, remaining_time}
-    end
+          %{id: ^group_id, time: time} = group ->
+            Process.send_after(self(), {:timer, group_id}, 1000)
+            update_time = if time - 1 > 0, do: time - 1, else: 0
+            Map.put(group, :time, update_time)
+
+          group ->
+            group
+        end)
+      end)
+
+    {:noreply, state}
   end
 end
