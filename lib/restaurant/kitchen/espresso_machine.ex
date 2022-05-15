@@ -24,6 +24,10 @@ defmodule Restaurant.Kitchen.EspressoMachine do
     GenServer.call(__MODULE__, :state)
   end
 
+  def put_espresso() do
+    GenServer.call(__MODULE__, :put_espresso)
+  end
+
   # Server
   def init(groups_count) do
     state = %{
@@ -43,10 +47,6 @@ defmodule Restaurant.Kitchen.EspressoMachine do
     else
       {:noreply, state}
     end
-  end
-
-  def handle_call(:state, _from, state) do
-    {:reply, state, state}
   end
 
   def handle_info({:timer, group_id}, state) do
@@ -77,5 +77,18 @@ defmodule Restaurant.Kitchen.EspressoMachine do
         group -> group
       end)
     end)
+  end
+
+  def handle_call(:state, _from, state) do
+    {:reply, state, state}
+  end
+
+  def handle_call(:put_espresso, _from, state) do
+    if state.results_count < 1 do
+      {:reply, :error, state}
+    else
+      state = Map.update!(state, :results_count, &(&1 - 1))
+      {:reply, :ok, state}
+    end
   end
 end

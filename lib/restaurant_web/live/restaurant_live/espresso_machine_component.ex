@@ -16,10 +16,16 @@ defmodule RestaurantWeb.RestaurantLive.EspressoMachineComponent do
             <td></td>
             <td><%= group.time %></td>
             <td>
-              <button phx-click="extract_espresso" phx-value-id={group.id}>extract</button>
+              <button phx-click="extract_espresso" phx-value-id={group.id} disabled={group.time > 0}>extract</button>
             </td>
           </tr>
         <% end %>
+        <tfoot>
+          <tr>
+              <td>espresso count</td>
+              <td><%= @state.results_count %></td>
+          </tr>
+        </tfoot>
       </table>
     </div>
     """
