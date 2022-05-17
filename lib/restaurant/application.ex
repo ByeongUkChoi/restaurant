@@ -20,6 +20,7 @@ defmodule Restaurant.Application do
       # {Restaurant.Worker, arg}
       {Restaurant.Kitchen.Stove, 4},
       {Restaurant.Kitchen.EspressoMachine, 3},
+      {Restaurant.Kitchen.CoffeeMachine, 3},
       Restaurant.OrderQueue
     ]
 

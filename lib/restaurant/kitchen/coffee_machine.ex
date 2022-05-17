@@ -37,7 +37,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     state = %{
       groups_count: groups_count,
       groups: Enum.map(1..groups_count, &%{id: &1, menu: nil, time: 0}),
-      results_count: 0
+      results: []
     }
 
     {:ok, state}
@@ -68,10 +68,12 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
 
       {:noreply, state}
     else
+      menu = get_menu(state, group_id)
+
       state =
         state
         |> set_menu(group_id, nil)
-        |> Map.update!(:results_count, &(&1 + 1))
+        |> Map.update!(:results, &(&1 ++ [menu]))
 
       {:noreply, state}
     end
@@ -79,6 +81,10 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
 
   defp remaining_time(state, group_id) do
     Enum.find_value(state.groups, &(&1.id == group_id && &1.time))
+  end
+
+  defp get_menu(state, group_id) do
+    state.groups |> Enum.find_value(&(&1.id == group_id && &1.menu))
   end
 
   defp set_menu(state, group_id, menu) do
