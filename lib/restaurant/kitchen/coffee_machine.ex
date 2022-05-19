@@ -32,6 +32,11 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     GenServer.call(__MODULE__, :state)
   end
 
+  @spec put(menu()) :: menu() | nil
+  def put(menu) do
+    GenServer.call(__MODULE__, {:put, menu})
+  end
+
   # Server
   def init(groups_count) do
     state = %{
@@ -111,5 +116,17 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
 
   def handle_call(:state, _from, state) do
     {:reply, state, state}
+  end
+
+  def handle_call({:put, menu}, _from, state) do
+    if Enum.member?(state.results, menu) do
+      state =
+        state
+        |> Map.update!(:results, &(&1 -- [menu]))
+
+      {:reply, menu, state}
+    else
+      {:reply, nil, state}
+    end
   end
 end
