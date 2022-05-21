@@ -4,7 +4,7 @@ defmodule RestaurantWeb.RestaurantLive do
   import Transformer
 
   alias Restaurant.Kitchen.Stove
-  alias Restaurant.Kitchen.EspressoMachine
+  alias Restaurant.Kitchen.CoffeeMachine
   alias Restaurant.Order.Orders
   alias Restaurant.OrderQueue
 
@@ -12,7 +12,7 @@ defmodule RestaurantWeb.RestaurantLive do
     ~H"""
     <.live_component module={RestaurantWeb.RestaurantLive.KioskComponent} id="kiosk" menus={@menus} />
     <.live_component module={RestaurantWeb.RestaurantLive.OrderQueueComponent} id="order_queue" orders={@orders}/>
-    <.live_component module={RestaurantWeb.RestaurantLive.EspressoMachineComponent} id="espresso_machine" state={@espresso_machine} />
+    <.live_component module={RestaurantWeb.RestaurantLive.CoffeeMachineComponent} id="coffee_machine" state={@coffee_machine} />
     <.live_component module={RestaurantWeb.RestaurantLive.StoveComponent} id="stove" burners={@burners} />
     """
   end
@@ -25,7 +25,7 @@ defmodule RestaurantWeb.RestaurantLive do
        burners: get_burners(),
        orders: get_orders(),
        menus: get_menus(),
-       espresso_machine: get_espresso_machine_state()
+       coffee_machine: get_coffee_machine_state()
      )}
   end
 
@@ -38,7 +38,7 @@ defmodule RestaurantWeb.RestaurantLive do
      assign(socket,
        burners: get_burners(),
        orders: get_orders(),
-       espresso_machine: get_espresso_machine_state()
+       coffee_machine: get_coffee_machine_state()
      )}
   end
 
@@ -51,7 +51,7 @@ defmodule RestaurantWeb.RestaurantLive do
        assign(socket,
          burners: get_burners(),
          orders: get_orders(),
-         espresso_machine: get_espresso_machine_state()
+         coffee_machine: get_coffee_machine_state()
        )}
     end
   end
@@ -65,7 +65,7 @@ defmodule RestaurantWeb.RestaurantLive do
      assign(socket,
        burners: get_burners(),
        orders: get_orders(),
-       espresso_machine: get_espresso_machine_state()
+       coffee_machine: get_coffee_machine_state()
      )}
   end
 
@@ -78,7 +78,7 @@ defmodule RestaurantWeb.RestaurantLive do
      assign(socket,
        burners: get_burners(),
        orders: get_orders(),
-       espresso_machine: get_espresso_machine_state()
+       coffee_machine: get_coffee_machine_state()
      )}
   end
 
@@ -91,7 +91,7 @@ defmodule RestaurantWeb.RestaurantLive do
      assign(socket,
        burners: get_burners(),
        orders: get_orders(),
-       espresso_machine: get_espresso_machine_state()
+       coffee_machine: get_coffee_machine_state()
      )}
   end
 
@@ -104,18 +104,19 @@ defmodule RestaurantWeb.RestaurantLive do
      assign(socket,
        burners: get_burners(),
        orders: get_orders(),
-       espresso_machine: get_espresso_machine_state()
+       coffee_machine: get_coffee_machine_state()
      )}
   end
 
-  def handle_event("extract_espresso", %{"id" => id}, socket) do
-    id |> to_integer_or() |> EspressoMachine.extract()
+  def handle_event("extract_coffee", %{"id" => id_str, "menu" => menu}, socket) do
+    id = to_integer_or(id_str)
+    CoffeeMachine.extract(id, menu)
 
     {:noreply,
      assign(socket,
        burners: get_burners(),
        orders: get_orders(),
-       espresso_machine: get_espresso_machine_state()
+       coffee_machine: get_coffee_machine_state()
      )}
   end
 
@@ -131,7 +132,7 @@ defmodule RestaurantWeb.RestaurantLive do
     OrderQueue.list()
   end
 
-  defp get_espresso_machine_state() do
-    EspressoMachine.state()
+  defp get_coffee_machine_state() do
+    CoffeeMachine.state()
   end
 end
