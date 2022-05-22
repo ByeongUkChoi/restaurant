@@ -7,28 +7,28 @@ defmodule RestaurantWeb.RestaurantLive.CoffeeMachineComponent do
       <label>coffee machine</label>
       <table>
         <th>id</th>
-        <th>status</th>
         <th>timer</th>
         <th>extract</th>
         <%= for group <- @state.groups do %>
           <tr>
             <td><%= group.id %></td>
-            <td></td>
             <td><%= group.time %></td>
             <td>
-              <button phx-click="extract_coffee" phx-value-id={group.id} phx-value-menu={:coffee} disabled={group.time > 0}>extract</button>
-            </td>
-            <td>
-              <button phx-click="extract_coffee" phx-value-id={group.id} phx-value-menu={:latte} disabled={group.time > 0}>extract</button>
+            <%= for menu <- [:americano, :latte] do %>
+              <button phx-click="extract_coffee" phx-value-id={group.id} phx-value-menu={menu} disabled={group.time > 0}><%= menu %></button>
+            <% end %>
             </td>
           </tr>
         <% end %>
-        <tfoot>
-          <tr>
-              <td>results</td>
-              <td><%= @state.results %></td>
-          </tr>
-        </tfoot>
+      </table>
+      <label>results</label>
+      <table>
+        <%= for menu <- [:americano, :latte] do %>
+        <tr>
+          <td><%= menu %></td>
+          <td><%= Enum.count(@state.results, & &1 == Atom.to_string(menu)) %></td>
+        </tr>
+        <% end %>
       </table>
     </div>
     """
