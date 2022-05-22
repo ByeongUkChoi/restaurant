@@ -14,8 +14,12 @@ defmodule RestaurantWeb.RestaurantLive.CoffeeMachineComponent do
             <td><%= group.id %></td>
             <td><%= group.time %></td>
             <td>
-            <%= for menu <- [:americano, :latte] do %>
-              <button phx-click="extract_coffee" phx-value-id={group.id} phx-value-menu={menu} disabled={group.time > 0}><%= menu %></button>
+            <%= if group.time == 0 do %>
+              <%= for menu <- [:americano, :latte] do %>
+                <button phx-click="extract_coffee" phx-value-id={group.id} phx-value-menu={menu} ><%= menu %></button>
+              <% end %>
+            <% else %>
+                <button disabled><%= group.menu %></button>
             <% end %>
             </td>
           </tr>
