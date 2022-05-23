@@ -13,8 +13,9 @@ defmodule RestaurantWeb.RestaurantLive do
     <.live_component module={RestaurantWeb.RestaurantLive.KioskComponent} id="kiosk" menus={@menus} />
     <.live_component module={RestaurantWeb.RestaurantLive.OrderQueueComponent} id="order_queue" orders={@orders}/>
     <.live_component module={RestaurantWeb.RestaurantLive.CoffeeMachineComponent} id="coffee_machine" state={@coffee_machine} />
-    <.live_component module={RestaurantWeb.RestaurantLive.StoveComponent} id="stove" burners={@burners} />
     """
+
+    # <.live_component module={RestaurantWeb.RestaurantLive.StoveComponent} id="stove" burners={@burners} />
   end
 
   def mount(_params, _session, socket) do
@@ -54,6 +55,20 @@ defmodule RestaurantWeb.RestaurantLive do
          coffee_machine: get_coffee_machine_state()
        )}
     end
+  end
+
+  def handle_event("delivery", %{"order_id" => order_id}, socket) do
+    order_id
+    |> to_integer_or()
+
+    # TODO:
+
+    {:noreply,
+     assign(socket,
+       burners: get_burners(),
+       orders: get_orders(),
+       coffee_machine: get_coffee_machine_state()
+     )}
   end
 
   def handle_event("turn_on", %{"index" => index}, socket) do

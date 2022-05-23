@@ -8,10 +8,14 @@ defmodule RestaurantWeb.RestaurantLive.OrderQueueComponent do
       <table>
         <th>id</th>
         <th>name</th>
+        <th>delivery</th>
         <%= for order <- @orders do %>
           <tr>
             <td><%= order.id %></td>
             <td><%= order.name %></td>
+            <td>
+                <button phx-click="delivery" phx-value-order-id={order.id} >delivery</button>
+            </td>
           </tr>
         <% end %>
       </table>
