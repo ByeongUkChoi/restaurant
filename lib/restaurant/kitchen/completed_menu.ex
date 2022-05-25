@@ -9,6 +9,10 @@ defmodule Restaurant.Kitchen.CompletedMenu do
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end
 
+  def get_all() do
+    GenServer.call(__MODULE__, :get_all)
+  end
+
   def get(menu) do
     GenServer.call(__MODULE__, {:get, menu})
   end
@@ -20,6 +24,10 @@ defmodule Restaurant.Kitchen.CompletedMenu do
   # Server
   def init(nil) do
     {:ok, []}
+  end
+
+  def handle_call(:get_all, _from, menus) do
+    {:reply, menus, menus}
   end
 
   def handle_call({:get, menu}, _from, menus) do

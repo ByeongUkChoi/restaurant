@@ -5,6 +5,7 @@ defmodule RestaurantWeb.RestaurantLive do
 
   alias Restaurant.Kitchen.Stove
   alias Restaurant.Kitchen.CoffeeMachine
+  alias Restaurant.Kitchen.CompletedMenu
   alias Restaurant.Order.Orders
   alias Restaurant.OrderQueue
 
@@ -13,6 +14,11 @@ defmodule RestaurantWeb.RestaurantLive do
     <.live_component module={RestaurantWeb.RestaurantLive.KioskComponent} id="kiosk" menus={@menus} />
     <.live_component module={RestaurantWeb.RestaurantLive.OrderQueueComponent} id="order_queue" orders={@orders}/>
     <.live_component module={RestaurantWeb.RestaurantLive.CoffeeMachineComponent} id="coffee_machine" state={@coffee_machine} />
+
+      <label>results</label>
+      <%= for menu <- @completed_menus do %>
+        <p><%= menu %></p>
+      <% end %>
     """
 
     # <.live_component module={RestaurantWeb.RestaurantLive.StoveComponent} id="stove" burners={@burners} />
@@ -26,7 +32,8 @@ defmodule RestaurantWeb.RestaurantLive do
        burners: get_burners(),
        orders: get_orders(),
        menus: get_menus(),
-       coffee_machine: get_coffee_machine_state()
+       coffee_machine: get_coffee_machine_state(),
+       completed_menus: get_completed_menus()
      )}
   end
 
@@ -39,7 +46,8 @@ defmodule RestaurantWeb.RestaurantLive do
      assign(socket,
        burners: get_burners(),
        orders: get_orders(),
-       coffee_machine: get_coffee_machine_state()
+       coffee_machine: get_coffee_machine_state(),
+       completed_menus: get_completed_menus()
      )}
   end
 
@@ -52,7 +60,8 @@ defmodule RestaurantWeb.RestaurantLive do
        assign(socket,
          burners: get_burners(),
          orders: get_orders(),
-         coffee_machine: get_coffee_machine_state()
+         coffee_machine: get_coffee_machine_state(),
+         completed_menus: get_completed_menus()
        )}
     end
   end
@@ -67,7 +76,8 @@ defmodule RestaurantWeb.RestaurantLive do
      assign(socket,
        burners: get_burners(),
        orders: get_orders(),
-       coffee_machine: get_coffee_machine_state()
+       coffee_machine: get_coffee_machine_state(),
+       completed_menus: get_completed_menus()
      )}
   end
 
@@ -80,7 +90,8 @@ defmodule RestaurantWeb.RestaurantLive do
      assign(socket,
        burners: get_burners(),
        orders: get_orders(),
-       coffee_machine: get_coffee_machine_state()
+       coffee_machine: get_coffee_machine_state(),
+       completed_menus: get_completed_menus()
      )}
   end
 
@@ -93,7 +104,8 @@ defmodule RestaurantWeb.RestaurantLive do
      assign(socket,
        burners: get_burners(),
        orders: get_orders(),
-       coffee_machine: get_coffee_machine_state()
+       coffee_machine: get_coffee_machine_state(),
+       completed_menus: get_completed_menus()
      )}
   end
 
@@ -106,7 +118,8 @@ defmodule RestaurantWeb.RestaurantLive do
      assign(socket,
        burners: get_burners(),
        orders: get_orders(),
-       coffee_machine: get_coffee_machine_state()
+       coffee_machine: get_coffee_machine_state(),
+       completed_menus: get_completed_menus()
      )}
   end
 
@@ -119,7 +132,8 @@ defmodule RestaurantWeb.RestaurantLive do
      assign(socket,
        burners: get_burners(),
        orders: get_orders(),
-       coffee_machine: get_coffee_machine_state()
+       coffee_machine: get_coffee_machine_state(),
+       completed_menus: get_completed_menus()
      )}
   end
 
@@ -131,7 +145,8 @@ defmodule RestaurantWeb.RestaurantLive do
      assign(socket,
        burners: get_burners(),
        orders: get_orders(),
-       coffee_machine: get_coffee_machine_state()
+       coffee_machine: get_coffee_machine_state(),
+       completed_menus: get_completed_menus()
      )}
   end
 
@@ -149,5 +164,9 @@ defmodule RestaurantWeb.RestaurantLive do
 
   defp get_coffee_machine_state() do
     CoffeeMachine.state()
+  end
+
+  defp get_completed_menus() do
+    CompletedMenu.get_all()
   end
 end

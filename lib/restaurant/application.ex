@@ -21,7 +21,8 @@ defmodule Restaurant.Application do
       {Restaurant.Kitchen.Stove, 4},
       {Restaurant.Kitchen.EspressoMachine, 3},
       {Restaurant.Kitchen.CoffeeMachine, 3},
-      Restaurant.OrderQueue
+      Restaurant.OrderQueue,
+      Restaurant.Kitchen.CompletedMenu
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
