@@ -14,11 +14,10 @@ defmodule RestaurantWeb.RestaurantLive do
     <.live_component module={RestaurantWeb.RestaurantLive.KioskComponent} id="kiosk" menus={@menus} />
     <.live_component module={RestaurantWeb.RestaurantLive.OrderQueueComponent} id="order_queue" orders={@orders}/>
     <.live_component module={RestaurantWeb.RestaurantLive.CoffeeMachineComponent} id="coffee_machine" state={@coffee_machine} />
-
-      <label>results</label>
-      <%= for menu <- @completed_menus do %>
-        <p><%= menu %></p>
-      <% end %>
+    <label>completed menus</label>
+    <%= for menu <- @completed_menus do %>
+      <p><%= menu %></p>
+    <% end %>
     """
 
     # <.live_component module={RestaurantWeb.RestaurantLive.StoveComponent} id="stove" burners={@burners} />
@@ -66,11 +65,8 @@ defmodule RestaurantWeb.RestaurantLive do
     end
   end
 
-  def handle_event("delivery", %{"order_id" => order_id}, socket) do
-    order_id
-    |> to_integer_or()
-
-    # TODO:
+  def handle_event("delivery", %{"menu" => menu}, socket) do
+    CompletedMenu.get(menu)
 
     {:noreply,
      assign(socket,

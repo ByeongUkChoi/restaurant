@@ -6,15 +6,15 @@ defmodule RestaurantWeb.RestaurantLive.OrderQueueComponent do
     <div>
       <label>order queue</label>
       <table>
-        <th>id</th>
-        <th>name</th>
+        <th>no</th>
+        <th>menu</th>
         <th>delivery</th>
-        <%= for order <- @orders do %>
+        <%= for {order, no} <- Enum.with_index(@orders, 1) do %>
           <tr>
-            <td><%= order.id %></td>
+            <td><%= no %></td>
             <td><%= order.name %></td>
             <td>
-                <button phx-click="delivery" phx-value-order-id={order.id} >delivery</button>
+                <button phx-click="delivery" phx-value-menu={order.name} >delivery</button>
             </td>
           </tr>
         <% end %>

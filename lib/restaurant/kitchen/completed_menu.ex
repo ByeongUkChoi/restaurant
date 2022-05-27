@@ -38,7 +38,7 @@ defmodule Restaurant.Kitchen.CompletedMenu do
     end
   end
 
-  def handle_call({:put, menu}, _from, menus) do
+  def handle_cast({:put, menu}, menus) do
     {:noreply, menus ++ [menu]}
   end
 end
