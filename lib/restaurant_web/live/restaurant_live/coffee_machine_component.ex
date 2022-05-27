@@ -25,15 +25,6 @@ defmodule RestaurantWeb.RestaurantLive.CoffeeMachineComponent do
           </tr>
         <% end %>
       </table>
-      <label>results</label>
-      <table>
-        <%= for menu <- [:americano, :latte] do %>
-        <tr>
-          <td><%= menu %></td>
-          <td><%= Enum.count(@state.results, & &1 == Atom.to_string(menu)) %></td>
-        </tr>
-        <% end %>
-      </table>
     </div>
     """
   end

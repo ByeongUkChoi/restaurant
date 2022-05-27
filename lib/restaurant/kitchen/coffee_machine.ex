@@ -4,6 +4,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
   """
   use GenServer
 
+  alias Restaurant.Kitchen.CompletedMenu
+
   @type state :: %{
           groups_count: non_neg_integer(),
           groups:
@@ -11,8 +13,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
               required(:id) => integer(),
               required(:menu) => menu() | nil,
               required(:time) => non_neg_integer()
-            }),
-          results: []
+            })
         }
   @type menu :: :americano | :latte
 
@@ -32,17 +33,11 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     GenServer.call(__MODULE__, :state)
   end
 
-  @spec put(menu()) :: menu() | nil
-  def put(menu) do
-    GenServer.call(__MODULE__, {:put, menu})
-  end
-
   # Server
   def init(groups_count) do
     state = %{
       groups_count: groups_count,
-      groups: Enum.map(1..groups_count, &%{id: &1, menu: nil, time: 0}),
-      results: []
+      groups: Enum.map(1..groups_count, &%{id: &1, menu: nil, time: 0})
     }
 
     {:ok, state}
@@ -74,12 +69,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
       {:noreply, state}
     else
       menu = get_menu(state, group_id)
-
-      state =
-        state
-        |> set_menu(group_id, nil)
-        |> Map.update!(:results, &(&1 ++ [menu]))
-
+      CompletedMenu.put(menu)
+      state = state |> set_menu(group_id, nil)
       {:noreply, state}
     end
   end
@@ -116,17 +107,5 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
 
   def handle_call(:state, _from, state) do
     {:reply, state, state}
-  end
-
-  def handle_call({:put, menu}, _from, state) do
-    if Enum.member?(state.results, menu) do
-      state =
-        state
-        |> Map.update!(:results, &(&1 -- [menu]))
-
-      {:reply, menu, state}
-    else
-      {:reply, nil, state}
-    end
   end
 end
