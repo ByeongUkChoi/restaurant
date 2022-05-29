@@ -1,4 +1,4 @@
-defmodule Restaurant.OrderQueue do
+defmodule Restaurant.OrderList do
   @moduledoc """
   order queue
   """

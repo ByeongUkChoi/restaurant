@@ -1,4 +1,4 @@
-defmodule RestaurantWeb.RestaurantLive.OrderQueueComponent do
+defmodule RestaurantWeb.RestaurantLive.OrderListComponent do
   use RestaurantWeb, :live_component
 
   def render(assigns) do

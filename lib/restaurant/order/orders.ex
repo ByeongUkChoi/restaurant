@@ -4,7 +4,7 @@ defmodule Restaurant.Order.Orders do
   @spec get_menus :: list(Menu.t())
   def get_menus() do
     [
-      %Menu{id: 2, name: "americano", price: 1500},
+      %Menu{id: 1, name: "americano", price: 1500},
       %Menu{id: 2, name: "latte", price: 2000}
     ]
   end
