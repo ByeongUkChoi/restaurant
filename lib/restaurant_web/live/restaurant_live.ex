@@ -53,7 +53,7 @@ defmodule RestaurantWeb.RestaurantLive do
   def handle_event("order", %{"menu_id" => menu_id_str}, socket) do
     with menu_id when is_integer(menu_id) <- Transformer.to_integer_or(menu_id_str) do
       menu = Orders.get_menu(menu_id)
-      OrderList.enqueue(menu)
+      OrderList.put(menu)
 
       {:noreply,
        assign(socket,
@@ -66,7 +66,7 @@ defmodule RestaurantWeb.RestaurantLive do
   end
 
   def handle_event("delivery", %{"menu" => menu}, socket) do
-    CompletedMenu.get(menu)
+    CompletedMenu.get(menu) && OrderList.get(menu)
 
     {:noreply,
      assign(socket,

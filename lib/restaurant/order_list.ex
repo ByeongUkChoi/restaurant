@@ -9,12 +9,13 @@ defmodule Restaurant.OrderList do
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end
 
-  def enqueue(item) do
-    GenServer.cast(__MODULE__, {:enqueue, item})
+  def put(item) do
+    GenServer.cast(__MODULE__, {:put, item})
   end
 
-  def denqueue() do
-    GenServer.cast(__MODULE__, :denqueue)
+  # TODO: delete
+  def get(item) do
+    GenServer.cast(__MODULE__, {:get, item})
   end
 
   def list() do
@@ -23,19 +24,22 @@ defmodule Restaurant.OrderList do
 
   # Server
   def init(_) do
-    {:ok, :queue.new()}
+    {:ok, []}
   end
 
-  def handle_cast({:enqueue, item}, queue) do
-    {:noreply, :queue.in(item, queue)}
+  def handle_cast({:put, item}, list) do
+    {:noreply, list ++ [item]}
   end
 
-  def handle_call(:denqueue, _from, queue) do
-    {{:value, item}, queue} = :queue.out(queue)
-    {:reply, item, queue}
+  def handle_call({:get, item}, _from, list) do
+    if Enum.member?(list, item) do
+      {:reply, item, list -- [item]}
+    else
+      {:reply, nil, list}
+    end
   end
 
-  def handle_call(:list, _from, queue) do
-    {:reply, :queue.to_list(queue), queue}
+  def handle_call(:list, _from, list) do
+    {:reply, list, list}
   end
 end
