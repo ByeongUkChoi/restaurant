@@ -66,7 +66,7 @@ defmodule RestaurantWeb.RestaurantLive do
   end
 
   def handle_event("delivery", %{"menu" => menu}, socket) do
-    CompletedMenu.get(menu) && OrderList.get(menu)
+    CompletedMenu.get(menu) && OrderList.delete(menu)
 
     {:noreply,
      assign(socket,
