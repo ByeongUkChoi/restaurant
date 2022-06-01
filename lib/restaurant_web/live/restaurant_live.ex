@@ -65,8 +65,12 @@ defmodule RestaurantWeb.RestaurantLive do
     end
   end
 
-  def handle_event("delivery", %{"menu" => menu}, socket) do
-    CompletedMenu.get(menu) && OrderList.delete(menu)
+  def handle_event("delivery", %{"menu_id" => menu_id_str}, socket) do
+    menu_id = Transformer.to_integer_or(menu_id_str)
+    %{name: menu} = Orders.get_menu(menu_id)
+
+    CompletedMenu.get(menu)
+    OrderList.delete(menu_id)
 
     {:noreply,
      assign(socket,

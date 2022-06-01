@@ -9,12 +9,12 @@ defmodule RestaurantWeb.RestaurantLive.OrderListComponent do
         <th>no</th>
         <th>menu</th>
         <th>delivery</th>
-        <%= for {order, no} <- Enum.with_index(@orders, 1) do %>
+        <%= for {order_menu, no} <- Enum.with_index(@orders, 1) do %>
           <tr>
             <td><%= no %></td>
-            <td><%= order.name %></td>
+            <td><%= order_menu.name %></td>
             <td>
-                <button phx-click="delivery" phx-value-menu={order.name} >delivery</button>
+                <button phx-click="delivery" phx-value-menu_id={order_menu.id} >delivery</button>
             </td>
           </tr>
         <% end %>
