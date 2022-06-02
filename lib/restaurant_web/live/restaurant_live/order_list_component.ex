@@ -4,7 +4,7 @@ defmodule RestaurantWeb.RestaurantLive.OrderListComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <label>order queue</label>
+      <label>order list</label>
       <table>
         <th>no</th>
         <th>menu</th>

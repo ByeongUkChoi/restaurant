@@ -17,7 +17,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
         }
   @type menu :: :americano | :latte
 
-  @extract_time 15
+  @extract_time 5
 
   # API
   def start_link(groups_count) do

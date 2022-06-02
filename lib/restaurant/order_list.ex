@@ -4,6 +4,8 @@ defmodule Restaurant.OrderList do
   """
   use GenServer
 
+  @type state :: list(%{required(:menu_id) => integer()})
+
   # API
   def start_link(_) do
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
@@ -32,7 +34,7 @@ defmodule Restaurant.OrderList do
   end
 
   def handle_call({:delete, menu_id}, _from, list) do
-    if index = Enum.find_index(list, &(&1.id == menu_id)) do
+    if index = Enum.find_index(list, &(&1 == menu_id)) do
       {:reply, :ok, List.delete_at(list, index)}
     else
       {:reply, :error, list}
