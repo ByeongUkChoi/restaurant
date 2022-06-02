@@ -13,8 +13,9 @@ defmodule Restaurant.Kitchen.CompletedMenu do
     GenServer.call(__MODULE__, :get_all)
   end
 
-  def get(menu) do
-    GenServer.call(__MODULE__, {:get, menu})
+  @spec delete(integer()) :: :ok | :error
+  def delete(menu) do
+    GenServer.call(__MODULE__, {:delete, menu})
   end
 
   def put(menu) do
@@ -30,11 +31,11 @@ defmodule Restaurant.Kitchen.CompletedMenu do
     {:reply, menus, menus}
   end
 
-  def handle_call({:get, menu}, _from, menus) do
+  def handle_call({:delete, menu}, _from, menus) do
     if Enum.member?(menus, menu) do
-      {:reply, menu, menus -- [menu]}
+      {:reply, :ok, menus -- [menu]}
     else
-      {:reply, nil, menus}
+      {:reply, :error, menus}
     end
   end
 

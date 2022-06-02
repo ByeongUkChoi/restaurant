@@ -69,8 +69,12 @@ defmodule RestaurantWeb.RestaurantLive do
     menu_id = Transformer.to_integer_or(menu_id_str)
     %{name: menu} = Orders.get_menu(menu_id)
 
-    CompletedMenu.get(menu)
-    OrderList.delete(menu_id)
+    with :ok <- CompletedMenu.delete(menu),
+         {:delete_order_list, :ok} <- {:delete_order_list, OrderList.delete(menu_id)} do
+    else
+      {:delete_order_list, :error} -> CompletedMenu.put(menu)
+      _ -> :ok
+    end
 
     {:noreply,
      assign(socket,
