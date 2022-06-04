@@ -1,5 +1,5 @@
-defmodule Restaurant.Order.Orders do
-  alias Restaurant.Order.Menu
+defmodule Restaurant.Orders do
+  alias Restaurant.Orders.Menu
 
   @spec get_menus :: list(Menu.t())
   def get_menus() do
