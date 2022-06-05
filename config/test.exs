@@ -20,9 +20,6 @@ config :restaurant, RestaurantWeb.Endpoint,
   secret_key_base: "Hflo8zfmJmvuk54q0059HVO/p4AJI8CDcCo+hKVoOGo+FxujrbNUnCd3rjhrHycc",
   server: false
 
-# In test we don't send emails.
-config :restaurant, Restaurant.Mailer, adapter: Swoosh.Adapters.Test
-
 # Print only warnings and errors during test
 config :logger, level: :warn
 

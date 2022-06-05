@@ -6,7 +6,7 @@ defmodule RestaurantWeb.RestaurantLive do
   alias Restaurant.Kitchen.Stove
   alias Restaurant.Kitchen.CoffeeMachine
   alias Restaurant.Kitchen.CompletedMenu
-  alias Restaurant.Order.Orders
+  alias Restaurant.Orders
   alias Restaurant.OrderList
 
   def render(assigns) do
