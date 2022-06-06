@@ -52,7 +52,8 @@ defmodule RestaurantWeb.RestaurantLive do
 
   def handle_event("order", %{"menu_id" => menu_id_str}, socket) do
     menu_id = Transformer.to_integer_or(menu_id_str)
-    OrderList.put(menu_id)
+    order = Orders.order(menu_id)
+    OrderList.put(order)
 
     {:noreply,
      assign(socket,

@@ -4,7 +4,9 @@ defmodule Restaurant.OrderList do
   """
   use GenServer
 
-  @type state :: list(%{required(:menu_id) => integer()})
+  alias Restaurant.Orders.Order
+
+  @type state :: list(Order.t())
 
   # API
   def start_link(_) do
