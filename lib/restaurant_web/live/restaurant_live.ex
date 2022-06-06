@@ -7,12 +7,12 @@ defmodule RestaurantWeb.RestaurantLive do
   alias Restaurant.Kitchen.CoffeeMachine
   alias Restaurant.Kitchen.CompletedMenu
   alias Restaurant.Orders
-  alias Restaurant.OrderList
+  alias Restaurant.OrderedList
 
   def render(assigns) do
     ~H"""
     <.live_component module={RestaurantWeb.RestaurantLive.KioskComponent} id="kiosk" menus={@menus} />
-    <.live_component module={RestaurantWeb.RestaurantLive.OrderListComponent} id="order_list" orders={@orders}/>
+    <.live_component module={RestaurantWeb.RestaurantLive.OrderedListComponent} id="ordered_list" orders={@orders}/>
     <.live_component module={RestaurantWeb.RestaurantLive.CoffeeMachineComponent} id="coffee_machine" state={@coffee_machine} />
     <label>completed menus</label>
     <%= for menu <- @completed_menus do %>
@@ -53,7 +53,7 @@ defmodule RestaurantWeb.RestaurantLive do
   def handle_event("order", %{"menu_id" => menu_id_str}, socket) do
     menu_id = Transformer.to_integer_or(menu_id_str)
     order = Orders.order(menu_id)
-    OrderList.put(order)
+    OrderedList.put(order)
 
     {:noreply,
      assign(socket,
@@ -69,9 +69,9 @@ defmodule RestaurantWeb.RestaurantLive do
     %{name: menu} = Orders.get_menu(menu_id)
 
     with :ok <- CompletedMenu.delete(menu),
-         {:delete_order_list, :ok} <- {:delete_order_list, OrderList.delete(menu_id)} do
+         {:delete_ordered_list, :ok} <- {:delete_ordered_list, OrderedList.delete(menu_id)} do
     else
-      {:delete_order_list, :error} -> CompletedMenu.put(menu)
+      {:delete_ordered_list, :error} -> CompletedMenu.put(menu)
       _ -> :ok
     end
 
@@ -162,7 +162,7 @@ defmodule RestaurantWeb.RestaurantLive do
   end
 
   defp get_orders() do
-    OrderList.list()
+    OrderedList.list()
   end
 
   defp get_coffee_machine_state() do
