@@ -13,6 +13,11 @@ defmodule Restaurant.OrderedList do
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end
 
+  @spec get(Order.id()) :: Order.t() | nil
+  def get(order_id) do
+    GenServer.call(__MODULE__, {:get, order_id})
+  end
+
   def put(item) do
     GenServer.cast(__MODULE__, {:put, item})
   end
@@ -33,6 +38,10 @@ defmodule Restaurant.OrderedList do
 
   def handle_cast({:put, item}, list) do
     {:noreply, list ++ [item]}
+  end
+
+  def handle_call({:get, order_id}, _from, list) do
+    {:reply, Enum.find(list, &(&1.id == order_id)), list}
   end
 
   def handle_call({:delete, menu_id}, _from, list) do
