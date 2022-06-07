@@ -67,6 +67,15 @@ defmodule RestaurantWeb.RestaurantLive do
   def handle_event("delivery", %{"order_id" => order_id_str}, socket) do
     order_id = Transformer.to_integer_or(order_id_str)
 
+    with %{menu: menu} = order <- OrderedList.get(order_id),
+         :ok <- OrderedList.delete(order_id),
+         {:delete_completed_menu, :ok, _} <-
+           {:delete_completed_menu, CompletedMenu.delete(menu.name), order} do
+    else
+      {:delete_completed_menu, :error, order} -> OrderedList.put(order)
+      _ -> :ok
+    end
+
     with %{menu: %{name: menu_name}} <- OrderedList.get(order_id),
          :ok <- CompletedMenu.delete(menu_name),
          {:delete_ordered_list, :ok, _} <-

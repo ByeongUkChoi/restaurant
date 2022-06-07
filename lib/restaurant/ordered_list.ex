@@ -22,9 +22,9 @@ defmodule Restaurant.OrderedList do
     GenServer.cast(__MODULE__, {:put, item})
   end
 
-  @spec delete(integer()) :: :ok | :error
-  def delete(menu_id) do
-    GenServer.call(__MODULE__, {:delete, menu_id})
+  @spec delete(Order.id()) :: :ok | :error
+  def delete(order_id) do
+    GenServer.call(__MODULE__, {:delete, order_id})
   end
 
   def list() do
@@ -44,8 +44,8 @@ defmodule Restaurant.OrderedList do
     {:reply, Enum.find(list, &(&1.id == order_id)), list}
   end
 
-  def handle_call({:delete, menu_id}, _from, list) do
-    if index = Enum.find_index(list, &(&1 == menu_id)) do
+  def handle_call({:delete, order_id}, _from, list) do
+    if index = Enum.find_index(list, &(&1.id == order_id)) do
       {:reply, :ok, List.delete_at(list, index)}
     else
       {:reply, :error, list}
