@@ -4,6 +4,8 @@ defmodule Restaurant.Kitchen.CompletedMenu do
   """
   use GenServer
 
+  alias Restaurant.Orders.Menu
+
   # API
   def start_link(_) do
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
@@ -13,11 +15,12 @@ defmodule Restaurant.Kitchen.CompletedMenu do
     GenServer.call(__MODULE__, :get_all)
   end
 
-  @spec delete(integer()) :: :ok | :error
-  def delete(menu) do
-    GenServer.call(__MODULE__, {:delete, menu})
+  @spec delete(Menu.id()) :: :ok | :error
+  def delete(menu_id) do
+    GenServer.call(__MODULE__, {:delete, menu_id})
   end
 
+  @spec put(Menu.t()) :: :ok
   def put(menu) do
     GenServer.cast(__MODULE__, {:put, menu})
   end
@@ -31,15 +34,15 @@ defmodule Restaurant.Kitchen.CompletedMenu do
     {:reply, menus, menus}
   end
 
-  def handle_call({:delete, menu}, _from, menus) do
-    if Enum.member?(menus, menu) do
-      {:reply, :ok, menus -- [menu]}
+  def handle_call({:delete, menu_id}, _from, menus) do
+    if index = Enum.find_index(menus, &(&1.id == menu_id)) do
+      {:reply, :ok, List.delete_at(menus, index)}
     else
       {:reply, :error, menus}
     end
   end
 
   def handle_cast({:put, menu}, menus) do
-    {:noreply, menus ++ [menu]}
+    {:noreply, List.insert_at(menus, -1, menu)}
   end
 end
