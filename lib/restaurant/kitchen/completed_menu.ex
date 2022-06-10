@@ -15,6 +15,11 @@ defmodule Restaurant.Kitchen.CompletedMenu do
     GenServer.call(__MODULE__, :get_all)
   end
 
+  @spec get(Menu.id()) :: Menu.t() | nil
+  def get(menu_id) do
+    GenServer.call(__MODULE__, {:get, menu_id})
+  end
+
   @spec delete(Menu.id()) :: :ok | :error
   def delete(menu_id) do
     GenServer.call(__MODULE__, {:delete, menu_id})
@@ -32,6 +37,10 @@ defmodule Restaurant.Kitchen.CompletedMenu do
 
   def handle_call(:get_all, _from, menus) do
     {:reply, menus, menus}
+  end
+
+  def handle_call({:get, menu_id}, _from, menus) do
+    {:reply, Enum.find(menus, &(&1.id == menu_id)), menus}
   end
 
   def handle_call({:delete, menu_id}, _from, menus) do
