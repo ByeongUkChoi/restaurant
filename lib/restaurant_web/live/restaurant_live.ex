@@ -13,10 +13,10 @@ defmodule RestaurantWeb.RestaurantLive do
     ~H"""
     <.live_component module={RestaurantWeb.RestaurantLive.KioskComponent} id="kiosk" menus={@menus} />
     <.live_component module={RestaurantWeb.RestaurantLive.OrderedListComponent} id="ordered_list" orders={@orders}/>
-    <.live_component module={RestaurantWeb.RestaurantLive.CoffeeMachineComponent} id="coffee_machine" state={@coffee_machine} />
+    <.live_component module={RestaurantWeb.RestaurantLive.CoffeeMachineComponent} id="coffee_machine" state={@coffee_machine} menus={@menus} />
     <label>completed menus</label>
     <%= for menu <- @completed_menus do %>
-      <p><%= menu %></p>
+      <p><%= menu.name %></p>
     <% end %>
     """
 
@@ -28,6 +28,7 @@ defmodule RestaurantWeb.RestaurantLive do
 
     {:ok,
      assign(socket,
+       menus: get_menus(),
        burners: get_burners(),
        orders: get_orders(),
        menus: get_menus(),
@@ -43,6 +44,7 @@ defmodule RestaurantWeb.RestaurantLive do
   def handle_info(:clock_tick, socket) do
     {:noreply,
      assign(socket,
+       menus: get_menus(),
        burners: get_burners(),
        orders: get_orders(),
        coffee_machine: get_coffee_machine_state(),
@@ -57,6 +59,7 @@ defmodule RestaurantWeb.RestaurantLive do
 
     {:noreply,
      assign(socket,
+       menus: get_menus(),
        burners: get_burners(),
        orders: get_orders(),
        coffee_machine: get_coffee_machine_state(),
@@ -78,6 +81,7 @@ defmodule RestaurantWeb.RestaurantLive do
 
     {:noreply,
      assign(socket,
+       menus: get_menus(),
        burners: get_burners(),
        orders: get_orders(),
        coffee_machine: get_coffee_machine_state(),
@@ -92,6 +96,7 @@ defmodule RestaurantWeb.RestaurantLive do
 
     {:noreply,
      assign(socket,
+       menus: get_menus(),
        burners: get_burners(),
        orders: get_orders(),
        coffee_machine: get_coffee_machine_state(),
@@ -106,6 +111,7 @@ defmodule RestaurantWeb.RestaurantLive do
 
     {:noreply,
      assign(socket,
+       menus: get_menus(),
        burners: get_burners(),
        orders: get_orders(),
        coffee_machine: get_coffee_machine_state(),
@@ -120,6 +126,7 @@ defmodule RestaurantWeb.RestaurantLive do
 
     {:noreply,
      assign(socket,
+       menus: get_menus(),
        burners: get_burners(),
        orders: get_orders(),
        coffee_machine: get_coffee_machine_state(),
@@ -134,6 +141,7 @@ defmodule RestaurantWeb.RestaurantLive do
 
     {:noreply,
      assign(socket,
+       menus: get_menus(),
        burners: get_burners(),
        orders: get_orders(),
        coffee_machine: get_coffee_machine_state(),
@@ -141,12 +149,15 @@ defmodule RestaurantWeb.RestaurantLive do
      )}
   end
 
-  def handle_event("extract_coffee", %{"id" => id_str, "menu" => menu}, socket) do
+  def handle_event("extract_coffee", %{"id" => id_str, "menu_id" => menu_id_str}, socket) do
     id = to_integer_or(id_str)
+    menu_id = to_integer_or(menu_id_str)
+    menu = Orders.get_menu(menu_id)
     CoffeeMachine.extract(id, menu)
 
     {:noreply,
      assign(socket,
+       menus: get_menus(),
        burners: get_burners(),
        orders: get_orders(),
        coffee_machine: get_coffee_machine_state(),
