@@ -5,17 +5,17 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
   use GenServer
 
   alias Restaurant.Kitchen.CompletedMenu
+  alias Restaurant.Orders.Menu
 
   @type state :: %{
           groups_count: non_neg_integer(),
           groups:
             list(%{
               required(:id) => integer(),
-              required(:menu) => menu() | nil,
+              required(:menu) => Menu.t() | nil,
               required(:time) => non_neg_integer()
             })
         }
-  @type menu :: :americano | :latte
 
   @extract_time 5
 
@@ -24,7 +24,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     GenServer.start_link(__MODULE__, groups_count, name: __MODULE__)
   end
 
-  @spec extract(integer(), menu()) :: :ok
+  @spec extract(integer(), Menu.t()) :: :ok
   def extract(group_id, menu) do
     GenServer.cast(__MODULE__, {:extract, group_id, menu})
   end
@@ -88,7 +88,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     |> Map.update!(:groups, fn groups ->
       groups
       |> Enum.map(fn
-        %{id: ^group_id, menu: nil} = group -> Map.put(group, :menu, menu)
+        %{id: ^group_id} = group -> Map.put(group, :menu, menu)
         group -> group
       end)
     end)

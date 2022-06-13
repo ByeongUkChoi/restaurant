@@ -14,7 +14,7 @@ defmodule Restaurant.Orders do
     get_menus() |> Enum.find(&(&1.id == id))
   end
 
-  def order(menu_id) do
+  def place(menu_id) do
     unixtime_str = DateTime.utc_now() |> DateTime.to_unix(:millisecond) |> Integer.to_string()
     random_str = Enum.random(0..999) |> Integer.to_string() |> String.pad_leading(3, "0")
     id = (unixtime_str <> random_str) |> String.to_integer()
