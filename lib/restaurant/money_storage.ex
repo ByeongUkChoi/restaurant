@@ -13,11 +13,19 @@ defmodule Restaurant.MoneyStorage do
     GenServer.call(__MODULE__, {:save, amount})
   end
 
+  def amount() do
+    GenServer.call(__MODULE__, :amount)
+  end
+
   def init(_) do
     {:ok, 0}
   end
 
-  def handle_call({:save, amount}, _from, state) do
-    {:reply, :ok, state + amount}
+  def handle_call({:save, save_amount}, _from, amount) do
+    {:reply, :ok, save_amount + amount}
+  end
+
+  def handle_call(:amount, _from, amount) do
+    {:reply, amount, amount}
   end
 end
