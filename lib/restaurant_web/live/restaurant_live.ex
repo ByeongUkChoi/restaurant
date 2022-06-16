@@ -8,9 +8,12 @@ defmodule RestaurantWeb.RestaurantLive do
   alias Restaurant.Kitchen.CompletedMenu
   alias Restaurant.Orders
   alias Restaurant.OrderedList
+  alias Restaurant.MoneyStorage
 
   def render(assigns) do
     ~H"""
+    <label>money</label>
+    <p><%= @money %></p>
     <.live_component module={RestaurantWeb.RestaurantLive.KioskComponent} id="kiosk" menus={@menus} />
     <.live_component module={RestaurantWeb.RestaurantLive.OrderedListComponent} id="ordered_list" orders={@orders}/>
     <.live_component module={RestaurantWeb.RestaurantLive.CoffeeMachineComponent} id="coffee_machine" state={@coffee_machine} menus={@menus} />
@@ -33,7 +36,8 @@ defmodule RestaurantWeb.RestaurantLive do
        orders: get_orders(),
        menus: get_menus(),
        coffee_machine: get_coffee_machine_state(),
-       completed_menus: get_completed_menus()
+       completed_menus: get_completed_menus(),
+       money: get_money()
      )}
   end
 
@@ -48,7 +52,8 @@ defmodule RestaurantWeb.RestaurantLive do
        burners: get_burners(),
        orders: get_orders(),
        coffee_machine: get_coffee_machine_state(),
-       completed_menus: get_completed_menus()
+       completed_menus: get_completed_menus(),
+       money: get_money()
      )}
   end
 
@@ -56,6 +61,7 @@ defmodule RestaurantWeb.RestaurantLive do
     menu_id = Transformer.to_integer_or(menu_id_str)
     order = Orders.place(menu_id)
     OrderedList.put(order)
+    MoneyStorage.save(order.menu.price)
 
     {:noreply,
      assign(socket,
@@ -63,7 +69,8 @@ defmodule RestaurantWeb.RestaurantLive do
        burners: get_burners(),
        orders: get_orders(),
        coffee_machine: get_coffee_machine_state(),
-       completed_menus: get_completed_menus()
+       completed_menus: get_completed_menus(),
+       money: get_money()
      )}
   end
 
@@ -86,7 +93,8 @@ defmodule RestaurantWeb.RestaurantLive do
        burners: get_burners(),
        orders: get_orders(),
        coffee_machine: get_coffee_machine_state(),
-       completed_menus: get_completed_menus()
+       completed_menus: get_completed_menus(),
+       money: get_money()
      )}
   end
 
@@ -101,7 +109,8 @@ defmodule RestaurantWeb.RestaurantLive do
        burners: get_burners(),
        orders: get_orders(),
        coffee_machine: get_coffee_machine_state(),
-       completed_menus: get_completed_menus()
+       completed_menus: get_completed_menus(),
+       money: get_money()
      )}
   end
 
@@ -116,7 +125,8 @@ defmodule RestaurantWeb.RestaurantLive do
        burners: get_burners(),
        orders: get_orders(),
        coffee_machine: get_coffee_machine_state(),
-       completed_menus: get_completed_menus()
+       completed_menus: get_completed_menus(),
+       money: get_money()
      )}
   end
 
@@ -131,7 +141,8 @@ defmodule RestaurantWeb.RestaurantLive do
        burners: get_burners(),
        orders: get_orders(),
        coffee_machine: get_coffee_machine_state(),
-       completed_menus: get_completed_menus()
+       completed_menus: get_completed_menus(),
+       money: get_money()
      )}
   end
 
@@ -146,7 +157,8 @@ defmodule RestaurantWeb.RestaurantLive do
        burners: get_burners(),
        orders: get_orders(),
        coffee_machine: get_coffee_machine_state(),
-       completed_menus: get_completed_menus()
+       completed_menus: get_completed_menus(),
+       money: get_money()
      )}
   end
 
@@ -162,7 +174,8 @@ defmodule RestaurantWeb.RestaurantLive do
        burners: get_burners(),
        orders: get_orders(),
        coffee_machine: get_coffee_machine_state(),
-       completed_menus: get_completed_menus()
+       completed_menus: get_completed_menus(),
+       money: get_money()
      )}
   end
 
@@ -184,5 +197,9 @@ defmodule RestaurantWeb.RestaurantLive do
 
   defp get_completed_menus() do
     CompletedMenu.get_all()
+  end
+
+  defp get_money() do
+    MoneyStorage.amount()
   end
 end
