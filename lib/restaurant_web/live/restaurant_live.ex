@@ -74,6 +74,24 @@ defmodule RestaurantWeb.RestaurantLive do
      )}
   end
 
+  def handle_event("cancel_order", %{"order_id" => order_id_str}, socket) do
+    order_id = Transformer.to_integer_or(order_id_str)
+    # TOOD: cancel_order
+    # order = Orders.place(menu_id)
+    # OrderedList.put(order)
+    # MoneyStorage.save(order.menu.price)
+
+    {:noreply,
+     assign(socket,
+       menus: get_menus(),
+       burners: get_burners(),
+       orders: get_orders(),
+       coffee_machine: get_coffee_machine_state(),
+       completed_menus: get_completed_menus(),
+       money: get_money()
+     )}
+  end
+
   def handle_event("delivery", %{"order_id" => order_id_str}, socket) do
     order_id = Transformer.to_integer_or(order_id_str)
 

@@ -4,7 +4,7 @@ defmodule RestaurantWeb.RestaurantLive.OrderedListComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <label>order list</label>
+      <label>ordered list</label>
       <table>
         <th>no</th>
         <th>order id</th>
@@ -17,6 +17,7 @@ defmodule RestaurantWeb.RestaurantLive.OrderedListComponent do
             <td><%= order.menu.name %></td>
             <td>
                 <button phx-click="delivery" phx-value-order_id={order.id} >delivery</button>
+                <button phx-click="cancel" phx-value-order_id={order.id} >cancel</button>
             </td>
           </tr>
         <% end %>
