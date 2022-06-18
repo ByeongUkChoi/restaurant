@@ -1,5 +1,6 @@
 defmodule Restaurant.Orders do
   alias Restaurant.Orders.{Order, Menu}
+  alias Restaurant.OrderedList
 
   @spec get_menus :: list(Menu.t())
   def get_menus() do
@@ -18,6 +19,15 @@ defmodule Restaurant.Orders do
     unixtime_str = DateTime.utc_now() |> DateTime.to_unix(:millisecond) |> Integer.to_string()
     random_str = Enum.random(0..999) |> Integer.to_string() |> String.pad_leading(3, "0")
     id = (unixtime_str <> random_str) |> String.to_integer()
-    %Order{id: id, menu: get_menu(menu_id)}
+    order = %Order{id: id, menu: get_menu(menu_id)}
+    OrderedList.put(order)
+  end
+
+  def get_order(order_id) do
+    OrderedList.get(order_id)
+  end
+
+  def cancel_order(order_id) do
+    OrderedList.delete(order_id)
   end
 end
