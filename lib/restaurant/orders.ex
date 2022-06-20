@@ -15,13 +15,19 @@ defmodule Restaurant.Orders do
     get_menus() |> Enum.find(&(&1.id == id))
   end
 
-  def place(menu_id) do
+  @spec place(integer(), function()) :: Order.t()
+  def place(menu_id, fn_save_money) do
     unixtime_str = DateTime.utc_now() |> DateTime.to_unix(:millisecond) |> Integer.to_string()
     random_str = Enum.random(0..999) |> Integer.to_string() |> String.pad_leading(3, "0")
     id = (unixtime_str <> random_str) |> String.to_integer()
     order = %Order{id: id, menu: get_menu(menu_id)}
     OrderedList.put(order)
+    fn_save_money.(order.menu.price)
     order
+  end
+
+  def get_orders() do
+    OrderedList.list()
   end
 
   def get_order(order_id) do

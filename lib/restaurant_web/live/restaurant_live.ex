@@ -7,7 +7,6 @@ defmodule RestaurantWeb.RestaurantLive do
   alias Restaurant.Kitchen.CoffeeMachine
   alias Restaurant.Kitchen.CompletedMenu
   alias Restaurant.Orders
-  alias Restaurant.OrderedList
   alias Restaurant.MoneyStorage
 
   def render(assigns) do
@@ -59,10 +58,7 @@ defmodule RestaurantWeb.RestaurantLive do
 
   def handle_event("order", %{"menu_id" => menu_id_str}, socket) do
     menu_id = Transformer.to_integer_or(menu_id_str)
-    order = Orders.place(menu_id)
-    IO.inspect(order)
-    OrderedList.put(order)
-    MoneyStorage.save(order.menu.price)
+    Orders.place(menu_id, fn money -> MoneyStorage.save(money) end)
 
     {:noreply,
      assign(socket,
@@ -208,7 +204,7 @@ defmodule RestaurantWeb.RestaurantLive do
   end
 
   defp get_orders() do
-    OrderedList.list()
+    Orders.get_orders()
   end
 
   defp get_coffee_machine_state() do
