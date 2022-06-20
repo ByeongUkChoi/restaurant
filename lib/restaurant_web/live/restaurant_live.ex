@@ -60,6 +60,7 @@ defmodule RestaurantWeb.RestaurantLive do
   def handle_event("order", %{"menu_id" => menu_id_str}, socket) do
     menu_id = Transformer.to_integer_or(menu_id_str)
     order = Orders.place(menu_id)
+    IO.inspect(order)
     OrderedList.put(order)
     MoneyStorage.save(order.menu.price)
 
@@ -77,8 +78,8 @@ defmodule RestaurantWeb.RestaurantLive do
   def handle_event("cancel", %{"order_id" => order_id_str}, socket) do
     order_id = Transformer.to_integer_or(order_id_str)
 
-    with %{} = order <- OrderedList.get(order_id),
-         :ok <- OrderedList.delete(order_id),
+    with %{} = order <- Orders.get_order(order_id),
+         :ok <- Orders.cancel_order(order_id),
          :ok <- MoneyStorage.save(-1 * order.menu.price) do
     end
 
@@ -96,11 +97,11 @@ defmodule RestaurantWeb.RestaurantLive do
   def handle_event("delivery", %{"order_id" => order_id_str}, socket) do
     order_id = Transformer.to_integer_or(order_id_str)
 
-    with %{menu: %{id: menu_id} = menu} <- OrderedList.get(order_id),
+    with %{menu: %{id: menu_id} = menu} <- Orders.get_order(order_id),
          completed_menu when completed_menu != nil <- CompletedMenu.get(menu_id),
          :ok <- CompletedMenu.delete(menu_id),
          {:delete_ordered_list, :ok, _} <-
-           {:delete_ordered_list, OrderedList.delete(order_id), menu} do
+           {:delete_ordered_list, Orders.delivery_order(order_id), menu} do
     else
       {:delete_ordered_list, :error, menu} -> CompletedMenu.put(menu)
       _ -> :ok

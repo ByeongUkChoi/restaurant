@@ -21,10 +21,15 @@ defmodule Restaurant.Orders do
     id = (unixtime_str <> random_str) |> String.to_integer()
     order = %Order{id: id, menu: get_menu(menu_id)}
     OrderedList.put(order)
+    order
   end
 
   def get_order(order_id) do
     OrderedList.get(order_id)
+  end
+
+  def delivery_order(order_id) do
+    OrderedList.delete(order_id)
   end
 
   def cancel_order(order_id) do
