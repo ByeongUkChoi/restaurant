@@ -74,8 +74,8 @@ defmodule RestaurantWeb.RestaurantLive do
   def handle_event("cancel", %{"order_id" => order_id_str}, socket) do
     order_id = Transformer.to_integer_or(order_id_str)
 
-    with %{} = order when order != nil <- Orders.get_order(order_id),
-         :ok <- Orders.cancel_order(order_id, &MoneyStorage.save/1) do
+    if Orders.get_order(order_id) do
+      Orders.cancel_order(order_id, &MoneyStorage.put/1)
     end
 
     {:noreply,
