@@ -28,16 +28,7 @@ defmodule RestaurantWeb.RestaurantLive do
   def mount(_params, _session, socket) do
     start_timer(1000)
 
-    {:ok,
-     assign(socket,
-       menus: get_menus(),
-       burners: get_burners(),
-       orders: get_orders(),
-       menus: get_menus(),
-       coffee_machine: get_coffee_machine_state(),
-       completed_menus: get_completed_menus(),
-       money: get_money()
-     )}
+    {:ok, assign(socket, get_state())}
   end
 
   defp start_timer(interval) do
@@ -45,30 +36,14 @@ defmodule RestaurantWeb.RestaurantLive do
   end
 
   def handle_info(:clock_tick, socket) do
-    {:noreply,
-     assign(socket,
-       menus: get_menus(),
-       burners: get_burners(),
-       orders: get_orders(),
-       coffee_machine: get_coffee_machine_state(),
-       completed_menus: get_completed_menus(),
-       money: get_money()
-     )}
+    {:noreply, assign(socket, get_state())}
   end
 
   def handle_event("order", %{"menu_id" => menu_id_str}, socket) do
     menu_id = Transformer.to_integer_or(menu_id_str)
     Orders.place(menu_id, &MoneyStorage.save/1)
 
-    {:noreply,
-     assign(socket,
-       menus: get_menus(),
-       burners: get_burners(),
-       orders: get_orders(),
-       coffee_machine: get_coffee_machine_state(),
-       completed_menus: get_completed_menus(),
-       money: get_money()
-     )}
+    {:noreply, assign(socket, get_state())}
   end
 
   def handle_event("cancel", %{"order_id" => order_id_str}, socket) do
@@ -78,15 +53,7 @@ defmodule RestaurantWeb.RestaurantLive do
       Orders.cancel_order(order_id, &MoneyStorage.put/1)
     end
 
-    {:noreply,
-     assign(socket,
-       menus: get_menus(),
-       burners: get_burners(),
-       orders: get_orders(),
-       coffee_machine: get_coffee_machine_state(),
-       completed_menus: get_completed_menus(),
-       money: get_money()
-     )}
+    {:noreply, assign(socket, get_state())}
   end
 
   def handle_event("delivery", %{"order_id" => order_id_str}, socket) do
@@ -102,15 +69,7 @@ defmodule RestaurantWeb.RestaurantLive do
       _ -> :ok
     end
 
-    {:noreply,
-     assign(socket,
-       menus: get_menus(),
-       burners: get_burners(),
-       orders: get_orders(),
-       coffee_machine: get_coffee_machine_state(),
-       completed_menus: get_completed_menus(),
-       money: get_money()
-     )}
+    {:noreply, assign(socket, get_state())}
   end
 
   def handle_event("turn_on", %{"index" => index}, socket) do
@@ -118,15 +77,7 @@ defmodule RestaurantWeb.RestaurantLive do
     |> to_integer_or()
     |> Stove.turn_on(30)
 
-    {:noreply,
-     assign(socket,
-       menus: get_menus(),
-       burners: get_burners(),
-       orders: get_orders(),
-       coffee_machine: get_coffee_machine_state(),
-       completed_menus: get_completed_menus(),
-       money: get_money()
-     )}
+    {:noreply, assign(socket, get_state())}
   end
 
   def handle_event("turn_off", %{"index" => index}, socket) do
@@ -134,15 +85,7 @@ defmodule RestaurantWeb.RestaurantLive do
     |> to_integer_or()
     |> Stove.turn_off()
 
-    {:noreply,
-     assign(socket,
-       menus: get_menus(),
-       burners: get_burners(),
-       orders: get_orders(),
-       coffee_machine: get_coffee_machine_state(),
-       completed_menus: get_completed_menus(),
-       money: get_money()
-     )}
+    {:noreply, assign(socket, get_state())}
   end
 
   def handle_event("plus_timer", %{"index" => index}, socket) do
@@ -150,15 +93,7 @@ defmodule RestaurantWeb.RestaurantLive do
     |> to_integer_or()
     |> Stove.increase_timer(30)
 
-    {:noreply,
-     assign(socket,
-       menus: get_menus(),
-       burners: get_burners(),
-       orders: get_orders(),
-       coffee_machine: get_coffee_machine_state(),
-       completed_menus: get_completed_menus(),
-       money: get_money()
-     )}
+    {:noreply, assign(socket, get_state())}
   end
 
   def handle_event("minus_timer", %{"index" => index}, socket) do
@@ -166,15 +101,7 @@ defmodule RestaurantWeb.RestaurantLive do
     |> to_integer_or()
     |> Stove.decrease_timer(30)
 
-    {:noreply,
-     assign(socket,
-       menus: get_menus(),
-       burners: get_burners(),
-       orders: get_orders(),
-       coffee_machine: get_coffee_machine_state(),
-       completed_menus: get_completed_menus(),
-       money: get_money()
-     )}
+    {:noreply, assign(socket, get_state())}
   end
 
   def handle_event("extract_coffee", %{"id" => id_str, "menu_id" => menu_id_str}, socket) do
@@ -183,38 +110,17 @@ defmodule RestaurantWeb.RestaurantLive do
     menu = Orders.get_menu(menu_id)
     CoffeeMachine.extract(id, menu)
 
-    {:noreply,
-     assign(socket,
-       menus: get_menus(),
-       burners: get_burners(),
-       orders: get_orders(),
-       coffee_machine: get_coffee_machine_state(),
-       completed_menus: get_completed_menus(),
-       money: get_money()
-     )}
+    {:noreply, assign(socket, get_state())}
   end
 
-  defp get_menus() do
-    Orders.get_menus()
-  end
-
-  defp get_burners() do
-    Stove.get_burners()
-  end
-
-  defp get_orders() do
-    Orders.get_orders()
-  end
-
-  defp get_coffee_machine_state() do
-    CoffeeMachine.state()
-  end
-
-  defp get_completed_menus() do
-    CompletedMenu.get_all()
-  end
-
-  defp get_money() do
-    MoneyStorage.amount()
+  defp get_state() do
+    [
+      menus: Orders.get_menus(),
+      burners: Stove.get_burners(),
+      orders: Orders.get_orders(),
+      coffee_machine: CoffeeMachine.state(),
+      completed_menus: CompletedMenu.get_all(),
+      money: MoneyStorage.amount()
+    ]
   end
 end
