@@ -41,7 +41,9 @@ defmodule Restaurant.Orders do
     OrderedList.get(order_id)
   end
 
-  def delivery_order(order_id) do
+  def delivery_order(order_id, put_completed_menu_fn) do
+    order = OrderedList.get(order_id)
     OrderedList.delete(order_id)
+    put_completed_menu_fn.(order.menu.id)
   end
 end

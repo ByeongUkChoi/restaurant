@@ -40,14 +40,14 @@ defmodule RestaurantWeb.RestaurantLive do
   end
 
   def handle_event("order", %{"menu_id" => menu_id_str}, socket) do
-    menu_id = Transformer.to_integer_or(menu_id_str)
+    menu_id = to_integer_or(menu_id_str)
     Orders.place(menu_id, &MoneyStorage.save/1)
 
     {:noreply, assign(socket, get_state())}
   end
 
   def handle_event("cancel", %{"order_id" => order_id_str}, socket) do
-    order_id = Transformer.to_integer_or(order_id_str)
+    order_id = to_integer_or(order_id_str)
 
     if Orders.get_order(order_id) do
       Orders.cancel_order(order_id, &MoneyStorage.put/1)
@@ -57,7 +57,7 @@ defmodule RestaurantWeb.RestaurantLive do
   end
 
   def handle_event("delivery", %{"order_id" => order_id_str}, socket) do
-    order_id = Transformer.to_integer_or(order_id_str)
+    order_id = to_integer_or(order_id_str)
 
     with %{menu: %{id: menu_id} = menu} <- Orders.get_order(order_id),
          completed_menu when completed_menu != nil <- CompletedMenu.get(menu_id),
