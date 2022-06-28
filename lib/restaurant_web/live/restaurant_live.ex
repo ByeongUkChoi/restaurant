@@ -48,10 +48,7 @@ defmodule RestaurantWeb.RestaurantLive do
 
   def handle_event("cancel", %{"order_id" => order_id_str}, socket) do
     order_id = to_integer_or(order_id_str)
-
-    if Orders.get_order(order_id) do
-      Orders.cancel_order(order_id, &MoneyStorage.put/1)
-    end
+    Orders.cancel_order(order_id, &MoneyStorage.put/1)
 
     {:noreply, assign(socket, get_state())}
   end
@@ -59,14 +56,9 @@ defmodule RestaurantWeb.RestaurantLive do
   def handle_event("delivery", %{"order_id" => order_id_str}, socket) do
     order_id = to_integer_or(order_id_str)
 
-    with %{menu: %{id: menu_id} = menu} <- Orders.get_order(order_id),
-         completed_menu when completed_menu != nil <- CompletedMenu.get(menu_id),
-         :ok <- CompletedMenu.delete(menu_id),
-         {:delete_ordered_list, :ok, _} <-
-           {:delete_ordered_list, Orders.delivery_order(order_id), menu} do
-    else
-      {:delete_ordered_list, :error, menu} -> CompletedMenu.put(menu)
-      _ -> :ok
+    with %{menu: %{id: menu_id}} <- Orders.get_order(order_id),
+         completed_menu when completed_menu != nil <- CompletedMenu.get(menu_id) do
+      Orders.delivery_order(order_id, &CompletedMenu.delete/1)
     end
 
     {:noreply, assign(socket, get_state())}
