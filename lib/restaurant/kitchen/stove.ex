@@ -17,8 +17,8 @@ defmodule Restaurant.Kitchen.Stove do
     GenServer.call(__MODULE__, :get_burners)
   end
 
-  def turn_on(index, time) do
-    GenServer.cast(__MODULE__, {:turn_on, index, time})
+  def turn_on(index, value, time) do
+    GenServer.cast(__MODULE__, {:turn_on, index, value, time})
   end
 
   def turn_off(index) do
@@ -53,7 +53,7 @@ defmodule Restaurant.Kitchen.Stove do
     {:reply, burners, burners}
   end
 
-  def handle_cast({:turn_on, index, time}, burners) do
+  def handle_cast({:turn_on, index, _value, time}, burners) do
     %{pid: pid} = Enum.at(burners, index)
     Burner.turn_on(pid)
     Process.send_after(self(), {:timer, pid}, 0)

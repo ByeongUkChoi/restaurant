@@ -20,9 +20,10 @@ defmodule RestaurantWeb.RestaurantLive do
     <%= for menu <- @completed_menus do %>
       <p><%= menu.name %></p>
     <% end %>
+
+    <.live_component module={RestaurantWeb.RestaurantLive.StoveComponent} id="stove" burners={@burners} />
     """
 
-    # <.live_component module={RestaurantWeb.RestaurantLive.StoveComponent} id="stove" burners={@burners} />
   end
 
   def mount(_params, _session, socket) do
@@ -53,6 +54,15 @@ defmodule RestaurantWeb.RestaurantLive do
     {:noreply, assign(socket, get_state())}
   end
 
+  def handle_event("extract_coffee", %{"id" => id_str, "menu_id" => menu_id_str}, socket) do
+    id = to_integer_or(id_str)
+    menu_id = to_integer_or(menu_id_str)
+    menu = Orders.get_menu(menu_id)
+    CoffeeMachine.extract(id, menu)
+
+    {:noreply, assign(socket, get_state())}
+  end
+
   def handle_event("delivery", %{"order_id" => order_id_str}, socket) do
     order_id = to_integer_or(order_id_str)
 
@@ -64,6 +74,8 @@ defmodule RestaurantWeb.RestaurantLive do
     {:noreply, assign(socket, get_state())}
   end
 
+  # stove
+
   def handle_event("turn_on", %{"index" => index}, socket) do
     index
     |> to_integer_or()
@@ -72,7 +84,7 @@ defmodule RestaurantWeb.RestaurantLive do
     {:noreply, assign(socket, get_state())}
   end
 
-  def handle_event("turn_off", %{"index" => index}, socket) do
+  def handle_event("turn_off", %{"index" => index, "value" => _value}, socket) do
     index
     |> to_integer_or()
     |> Stove.turn_off()
@@ -96,14 +108,6 @@ defmodule RestaurantWeb.RestaurantLive do
     {:noreply, assign(socket, get_state())}
   end
 
-  def handle_event("extract_coffee", %{"id" => id_str, "menu_id" => menu_id_str}, socket) do
-    id = to_integer_or(id_str)
-    menu_id = to_integer_or(menu_id_str)
-    menu = Orders.get_menu(menu_id)
-    CoffeeMachine.extract(id, menu)
-
-    {:noreply, assign(socket, get_state())}
-  end
 
   defp get_state() do
     [
