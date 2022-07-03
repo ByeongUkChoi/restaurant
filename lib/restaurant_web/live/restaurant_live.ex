@@ -23,7 +23,6 @@ defmodule RestaurantWeb.RestaurantLive do
 
     <.live_component module={RestaurantWeb.RestaurantLive.StoveComponent} id="stove" burners={@burners} />
     """
-
   end
 
   def mount(_params, _session, socket) do
@@ -107,7 +106,6 @@ defmodule RestaurantWeb.RestaurantLive do
 
     {:noreply, assign(socket, get_state())}
   end
-
 
   defp get_state() do
     [

@@ -8,6 +8,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
   alias Restaurant.Orders.Menu
 
   @type state :: %{
+          material: %{beans: non_neg_integer(), milk: non_neg_integer()},
           groups_count: non_neg_integer(),
           groups:
             list(%{
@@ -21,7 +22,11 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
 
   # API
   def start_link(groups_count) do
-    GenServer.start_link(__MODULE__, groups_count, name: __MODULE__)
+    GenServer.start_link(
+      __MODULE__,
+      [groups_count: groups_count, material: %{beans: 100, milk: 100}],
+      name: __MODULE__
+    )
   end
 
   @spec extract(integer(), Menu.t()) :: :ok
@@ -34,9 +39,10 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
   end
 
   # Server
-  def init(groups_count) do
+  def init(groups_count: groups_count, material: material) do
     state = %{
       groups_count: groups_count,
+      material: material,
       groups: Enum.map(1..groups_count, &%{id: &1, menu: nil, time: 0})
     }
 

@@ -4,7 +4,17 @@ defmodule RestaurantWeb.RestaurantLive.CoffeeMachineComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <label>coffee machine</label>
+      <label><h1>coffee machine</h1></label>
+      <label>material</label>
+      <table>
+        <th>beans</th>
+        <th>milk</th>
+        <tr>
+          <td><%= @state.material.beans %></td>
+          <td><%= @state.material.milk %></td>
+        </tr>
+      </table>
+
       <table>
         <th>id</th>
         <th>timer</th>
