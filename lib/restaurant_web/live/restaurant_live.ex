@@ -1,127 +1,120 @@
-defmodule Restaurant.Kitchen.CoffeeMachine do
-  @moduledoc """
-  extract esspreso
-  """
-  use GenServer
+defmodule RestaurantWeb.RestaurantLive do
+  use RestaurantWeb, :live_view
 
+  import Transformer
+
+  alias Restaurant.Kitchen.Stove
+  alias Restaurant.Kitchen.CoffeeMachine
   alias Restaurant.Kitchen.CompletedMenu
-  alias Restaurant.Orders.Menu
+  alias Restaurant.Orders
+  alias Restaurant.MoneyStorage
 
-  @type state :: %{
-          material: %{beans: non_neg_integer(), milk: non_neg_integer()},
-          groups_count: non_neg_integer(),
-          groups:
-            list(%{
-              required(:id) => integer(),
-              required(:menu) => Menu.t() | nil,
-              required(:time) => non_neg_integer()
-            })
-        }
+  def render(assigns) do
+    ~H"""
+    <label>money</label>
+    <p><%= @money %></p>
+    <.live_component module={RestaurantWeb.RestaurantLive.KioskComponent} id="kiosk" menus={@menus} />
+    <.live_component module={RestaurantWeb.RestaurantLive.OrderedListComponent} id="ordered_list" orders={@orders}/>
+    <.live_component module={RestaurantWeb.RestaurantLive.CoffeeMachineComponent} id="coffee_machine" state={@coffee_machine} menus={@menus} />
+    <label>completed menus</label>
+    <%= for menu <- @completed_menus do %>
+      <p><%= menu.name %></p>
+    <% end %>
 
-  @extract_material %{americano: %{beans: 20}, latte: %{beans: 20, milk: 160}}
-  @extract_time 5
-
-  # API
-  def start_link(groups_count) do
-    GenServer.start_link(
-      __MODULE__,
-      [groups_count: groups_count, material: %{beans: 100, milk: 100}],
-      name: __MODULE__
-    )
+    <.live_component module={RestaurantWeb.RestaurantLive.StoveComponent} id="stove" burners={@burners} />
+    """
   end
 
-  @spec extract(integer(), Menu.t()) :: :ok
-  def extract(group_id, menu) do
-    GenServer.cast(__MODULE__, {:extract, group_id, menu})
+  def mount(_params, _session, socket) do
+    start_timer(1000)
+
+    {:ok, assign(socket, get_state())}
   end
 
-  def state() do
-    GenServer.call(__MODULE__, :state)
+  defp start_timer(interval) do
+    :timer.send_interval(interval, self(), :clock_tick)
   end
 
-  # Server
-  def init(groups_count: groups_count, material: material) do
-    state = %{
-      groups_count: groups_count,
-      material: material,
-      groups: Enum.map(1..groups_count, &%{id: &1, menu: nil, time: 0})
-    }
-
-    {:ok, state}
+  def handle_info(:clock_tick, socket) do
+    {:noreply, assign(socket, get_state())}
   end
 
-  def handle_cast({:extract, group_id, menu}, state) do
-    if remaining_time(state, group_id) == 0 do
-      Process.send_after(self(), {:timer, group_id}, 0)
+  def handle_event("order", %{"menu_id" => menu_id_str}, socket) do
+    menu_id = to_integer_or(menu_id_str)
+    Orders.place(menu_id, &MoneyStorage.save/1)
 
-      state =
-        state
-        |> set_menu(group_id, menu)
-        |> update_timer(group_id, @extract_time)
+    {:noreply, assign(socket, get_state())}
+  end
 
-      {:noreply, state}
-    else
-      {:noreply, state}
+  def handle_event("cancel", %{"order_id" => order_id_str}, socket) do
+    order_id = to_integer_or(order_id_str)
+    Orders.cancel_order(order_id, &MoneyStorage.put/1)
+
+    {:noreply, assign(socket, get_state())}
+  end
+
+  def handle_event("extract_coffee", %{"id" => id_str, "menu_id" => menu_id_str}, socket) do
+    id = to_integer_or(id_str)
+    menu_id = to_integer_or(menu_id_str)
+    menu = Orders.get_menu(menu_id)
+    CoffeeMachine.extract(id, menu)
+
+    {:noreply, assign(socket, get_state())}
+  end
+
+  def handle_event("delivery", %{"order_id" => order_id_str}, socket) do
+    order_id = to_integer_or(order_id_str)
+
+    with %{menu: %{id: menu_id}} <- Orders.get_order(order_id),
+         completed_menu when completed_menu != nil <- CompletedMenu.get(menu_id) do
+      Orders.delivery_order(order_id, &CompletedMenu.delete/1)
     end
+
+    {:noreply, assign(socket, get_state())}
   end
 
-  def handle_info({:timer, group_id}, state) do
-    remaining_time = remaining_time(state, group_id)
+  # stove
 
-    if remaining_time > 0 do
-      Process.send_after(self(), {:timer, group_id}, 1000)
-      update_time = if remaining_time - 1 > 0, do: remaining_time - 1, else: 0
-      state = update_timer(state, group_id, update_time)
+  def handle_event("turn_on", %{"index" => index}, socket) do
+    index
+    |> to_integer_or()
+    |> Stove.turn_on(30)
 
-      {:noreply, state}
-    else
-      menu = get_menu(state, group_id)
-      CompletedMenu.put(menu)
-      state = state |> set_menu(group_id, nil)
-      {:noreply, state}
-    end
+    {:noreply, assign(socket, get_state())}
   end
 
-  defp remaining_time(state, group_id) do
-    Enum.find_value(state.groups, &(&1.id == group_id && &1.time))
+  def handle_event("turn_off", %{"index" => index, "value" => _value}, socket) do
+    index
+    |> to_integer_or()
+    |> Stove.turn_off()
+
+    {:noreply, assign(socket, get_state())}
   end
 
-  defp get_menu(state, group_id) do
-    state.groups |> Enum.find_value(&(&1.id == group_id && &1.menu))
+  def handle_event("plus_timer", %{"index" => index}, socket) do
+    index
+    |> to_integer_or()
+    |> Stove.increase_timer(30)
+
+    {:noreply, assign(socket, get_state())}
   end
 
-  defp set_menu(state, group_id, menu) do
-    state
-    |> Map.update!(:groups, fn groups ->
-      groups
-      |> Enum.map(fn
-        %{id: ^group_id} = group -> Map.put(group, :menu, menu)
-        group -> group
-      end)
-    end)
+  def handle_event("minus_timer", %{"index" => index}, socket) do
+    index
+    |> to_integer_or()
+    |> Stove.decrease_timer(30)
+
+    {:noreply, assign(socket, get_state())}
   end
 
-  defp put_material(state, menu) do
-    # TODO recipe
-    recipe = @extract_material |> Map.get(String.to_atom(menu.name))
-
-    state
-    |> update_in([:material, :beans], &(&1 - Map.get(recipe, :beans, 0)))
-    |> update_in([:material, :milk], &(&1 - Map.get(recipe, :milk, 0)))
-  end
-
-  defp update_timer(state, group_id, time) do
-    state
-    |> Map.update!(:groups, fn groups ->
-      groups
-      |> Enum.map(fn
-        %{id: ^group_id} = group -> Map.put(group, :time, time)
-        group -> group
-      end)
-    end)
-  end
-
-  def handle_call(:state, _from, state) do
-    {:reply, state, state}
+  defp get_state() do
+    [
+      menus: Orders.get_menus(),
+      burners: Stove.get_burners(),
+      orders: Orders.get_orders(),
+      coffee_machine: CoffeeMachine.state(),
+      completed_menus: CompletedMenu.get_all(),
+      money: MoneyStorage.amount()
+    ]
   end
 end
