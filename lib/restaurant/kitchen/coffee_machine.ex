@@ -18,6 +18,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
             })
         }
 
+  @extract_material %{americano: %{beans: 20}, latte: %{beans: 20, milk: 160}}
   @extract_time 5
 
   # API
@@ -56,6 +57,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
       state =
         state
         |> set_menu(group_id, menu)
+        |> put_material(menu)
         |> update_timer(group_id, @extract_time)
 
       {:noreply, state}
@@ -98,6 +100,15 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
         group -> group
       end)
     end)
+  end
+
+  defp put_material(state, menu) do
+    # TODO recipe
+    recipe = @extract_material |> Map.get(String.to_atom(menu.name))
+
+    state
+    |> update_in([:material, :beans], &(&1 - Map.get(recipe, :beans, 0)))
+    |> update_in([:material, :milk], &(&1 - Map.get(recipe, :milk, 0)))
   end
 
   defp update_timer(state, group_id, time) do
