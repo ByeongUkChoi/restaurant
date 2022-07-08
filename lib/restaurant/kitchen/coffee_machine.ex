@@ -8,7 +8,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
   alias Restaurant.Orders.Menu
 
   @type state :: %{
-          material: %{beans: non_neg_integer(), milk: non_neg_integer()},
+          materials: %{beans: non_neg_integer(), milk: non_neg_integer()},
           groups_count: non_neg_integer(),
           groups:
             list(%{
@@ -25,7 +25,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
   def start_link(groups_count) do
     GenServer.start_link(
       __MODULE__,
-      [groups_count: groups_count, material: %{beans: 100, milk: 100}],
+      [groups_count: groups_count, materials: %{beans: 1000, milk: 1000}],
       name: __MODULE__
     )
   end
@@ -35,15 +35,19 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     GenServer.cast(__MODULE__, {:extract, group_id, menu})
   end
 
+  def put_material(material) do
+    GenServer.cast(__MODULE__, {:put_material, material})
+  end
+
   def state() do
     GenServer.call(__MODULE__, :state)
   end
 
   # Server
-  def init(groups_count: groups_count, material: material) do
+  def init(groups_count: groups_count, materials: materials) do
     state = %{
       groups_count: groups_count,
-      material: material,
+      materials: materials,
       groups: Enum.map(1..groups_count, &%{id: &1, menu: nil, time: 0})
     }
 
@@ -57,13 +61,21 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
       state =
         state
         |> set_menu(group_id, menu)
-        |> put_material(menu)
+        |> pop_materials(menu)
         |> update_timer(group_id, @extract_time)
 
       {:noreply, state}
     else
       {:noreply, state}
     end
+  end
+
+  def handle_cast({:put_material, materials}, state) do
+    materials
+    |> Enum.each(fn {material, amount} ->
+      state
+      |> update_in([:material, material], &(&1 + amount))
+    end)
   end
 
   def handle_info({:timer, group_id}, state) do
@@ -102,7 +114,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     end)
   end
 
-  defp put_material(state, menu) do
+  defp pop_materials(state, menu) do
     amount = fn menu, material ->
       @recipe |> Map.get(menu) |> Map.get(material, 0)
     end

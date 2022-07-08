@@ -10,8 +10,8 @@ defmodule RestaurantWeb.RestaurantLive.CoffeeMachineComponent do
         <th>beans</th>
         <th>milk</th>
         <tr>
-          <td><%= @state.material.beans %></td>
-          <td><%= @state.material.milk %></td>
+          <td><%= @state.materials.beans %></td>
+          <td><%= @state.materials.milk %></td>
         </tr>
       </table>
 
