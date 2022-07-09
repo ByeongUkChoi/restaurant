@@ -13,6 +13,14 @@ defmodule RestaurantWeb.RestaurantLive.CoffeeMachineComponent do
           <td><%= @state.materials.beans %></td>
           <td><%= @state.materials.milk %></td>
         </tr>
+        <tr>
+          <td>
+            <button phx-click="buy_material" phx-value-material="beans">buy</button>
+          </td>
+          <td>
+            <button phx-click="buy_material" phx-value-material="milk">buy</button>
+          </td>
+        </tr>
       </table>
 
       <table>

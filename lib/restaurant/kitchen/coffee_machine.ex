@@ -115,24 +115,19 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
   end
 
   defp pop_materials(state, menu) do
-    amount = fn menu, material ->
-      @recipe |> Map.get(menu) |> Map.get(material, 0)
-    end
+    @recipe
+    |> Map.get(String.to_atom(menu.name))
+    |> Enum.map(fn {material, amount} ->
+      if get_in(state, [:materials, :material]) < amount do
+        raise "Need material=#{material}"
+      end
 
-    beans = String.to_atom(menu.name) |> amount.(:beans)
-    milk = String.to_atom(menu.name) |> amount.(:milk)
-
-    if get_in(state, [:material, :beans]) < beans do
-      raise "Need beans"
-    end
-
-    if get_in(state, [:material, :milk]) < milk do
-      raise "Need milk"
-    end
-
-    state
-    |> update_in([:material, :beans], &(&1 - beans))
-    |> update_in([:material, :milk], &(&1 - milk))
+      {material, amount}
+    end)
+    |> Enum.reduce(state, fn {material, amount}, state ->
+      state
+      |> update_in([:materials, material], &(&1 - amount))
+    end)
   end
 
   defp update_timer(state, group_id, time) do

@@ -53,6 +53,11 @@ defmodule RestaurantWeb.RestaurantLive do
     {:noreply, assign(socket, get_state())}
   end
 
+  def handle_event("buy_material", %{"material" => material}, socket) do
+    # TODO:
+    {:noreply, assign(socket, get_state())}
+  end
+
   def handle_event("extract_coffee", %{"id" => id_str, "menu_id" => menu_id_str}, socket) do
     id = to_integer_or(id_str)
     menu_id = to_integer_or(menu_id_str)
