@@ -54,6 +54,7 @@ defmodule RestaurantWeb.RestaurantLive do
   end
 
   def handle_event("buy_material", %{"material" => material}, socket) do
+    CoffeeMachine.put_material(String.to_atom(material) |> IO.inspect(), 1000)
     # TODO:
     {:noreply, assign(socket, get_state())}
   end

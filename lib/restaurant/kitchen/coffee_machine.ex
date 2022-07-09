@@ -35,8 +35,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     GenServer.cast(__MODULE__, {:extract, group_id, menu})
   end
 
-  def put_material(material) do
-    GenServer.cast(__MODULE__, {:put_material, material})
+  def put_material(material, amount) do
+    GenServer.cast(__MODULE__, {:put_material, material, amount})
   end
 
   def state() do
@@ -70,12 +70,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     end
   end
 
-  def handle_cast({:put_material, materials}, state) do
-    materials
-    |> Enum.each(fn {material, amount} ->
-      state
-      |> update_in([:material, material], &(&1 + amount))
-    end)
+  def handle_cast({:put_material, material, amount}, state) do
+    {:noreply, state |> update_in([:materials, material], &(&1 + amount))}
   end
 
   def handle_info({:timer, group_id}, state) do
