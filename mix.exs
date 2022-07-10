@@ -48,7 +48,8 @@ defmodule Restaurant.MixProject do
       {:gettext, "~> 0.18"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
-      {:transformer, "~> 0.0.2"}
+      {:transformer, "~> 0.0.2"},
+      {:gen_stage, "~> 1.1.2"}
     ]
   end
 
