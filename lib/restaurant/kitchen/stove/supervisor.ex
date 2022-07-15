@@ -1,6 +1,7 @@
 defmodule Restaurant.Kitchen.Stove.Supervisor do
   use Supervisor
 
+  alias Restaurant.Kitchen.Stove.Controller
   alias Restaurant.Kitchen.Stove.Burner
 
   def start_link(burners_count) do
@@ -9,7 +10,9 @@ defmodule Restaurant.Kitchen.Stove.Supervisor do
 
   @impl true
   def init(burners_count) do
-    children = 1..burners_count |> Enum.map(&Supervisor.child_spec({Burner, []}, id: &1))
+    controller = {Controller, []}
+    burners = 1..burners_count |> Enum.map(&Supervisor.child_spec({Burner, []}, id: &1))
+    children = [controller | burners]
 
     Supervisor.init(children, strategy: :one_for_one)
   end
