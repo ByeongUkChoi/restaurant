@@ -3,7 +3,7 @@ defmodule RestaurantWeb.RestaurantLive do
 
   import Transformer
 
-  alias Restaurant.Kitchen.Stove
+  alias Restaurant.Kitchen.Stove.Controller, as: Stove
   alias Restaurant.Kitchen.CoffeeMachine
   alias Restaurant.Kitchen.CompletedMenu
   alias Restaurant.Orders
