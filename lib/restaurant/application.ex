@@ -18,7 +18,8 @@ defmodule Restaurant.Application do
       RestaurantWeb.Endpoint,
       # Start a worker by calling: Restaurant.Worker.start_link(arg)
       # {Restaurant.Worker, arg}
-      {Restaurant.Kitchen.Stove, 4},
+      {Restaurant.Kitchen.Stove.BurnerSupervisor, 4},
+      {Restaurant.Kitchen.Stove.Controller, Restaurant.Kitchen.Stove.BurnerSupervisor},
       # {Restaurant.Kitchen.Stove, 4},
       {Restaurant.Kitchen.EspressoMachine, 3},
       {Restaurant.Kitchen.CoffeeMachine, 3},

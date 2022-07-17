@@ -9,8 +9,8 @@ defmodule Restaurant.Kitchen.Stove.Controller do
   alias Restaurant.Kitchen.Stove.Burner
 
   # API
-  def start_link(_) do
-    GenServer.start_link(__MODULE__, nil, name: __MODULE__)
+  def start_link(burner_supervisor) do
+    GenServer.start_link(__MODULE__, burner_supervisor, name: __MODULE__)
   end
 
   def get_burners() do
@@ -34,8 +34,13 @@ defmodule Restaurant.Kitchen.Stove.Controller do
   end
 
   # Server
-  def init(_) do
-    {:ok, nil}
+  def init(burner_supervisor) do
+    burners =
+      burner_supervisor
+      |> Supervisor.which_children()
+      |> Enum.map(fn {id, pid, _, _} -> %{id: id, pid: pid, status: false, timer: 0} end)
+
+    {:ok, burners}
   end
 
   def handle_call(:get_burners, _from, burners) do
