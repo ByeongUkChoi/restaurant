@@ -9,8 +9,8 @@ defmodule Restaurant.Kitchen.Stove.Controller do
   alias Restaurant.Kitchen.Stove.Burner
 
   # API
-  def start_link(burner_supervisor) do
-    GenServer.start_link(__MODULE__, burner_supervisor, name: __MODULE__)
+  def start_link(_) do
+    GenServer.start_link(__MODULE__, :no_args, name: __MODULE__)
   end
 
   def get_burners() do
@@ -34,13 +34,35 @@ defmodule Restaurant.Kitchen.Stove.Controller do
   end
 
   # Server
-  def init(burner_supervisor) do
+  def init(_) do
+    Process.send_after(self(), :regist_burners, 0)
+    {:ok, []}
+  end
+
+  def handle_info(:regist_burners, _) do
     burners =
-      burner_supervisor
+      Restaurant.Kitchen.Stove.Supervisor
       |> Supervisor.which_children()
+      |> Enum.filter(fn
+        {_id, _pid, _, [Restaurant.Kitchen.Stove.Burner]} -> true
+        {_id, _pid, _, _} -> false
+      end)
       |> Enum.map(fn {id, pid, _, _} -> %{id: id, pid: pid, status: false, timer: 0} end)
 
-    {:ok, burners}
+    {:noreply, burners}
+  end
+
+  def handle_info({:timer, pid}, burners) do
+    %{timer: remaining_time} = Enum.find(burners, &(&1.pid == pid))
+
+    if remaining_time > 0 do
+      Process.send_after(self(), {:timer, pid}, 1000)
+      update_time = if remaining_time - 1 > 0, do: remaining_time - 1, else: 0
+      {:noreply, update_burners(burners, pid, %{timer: update_time})}
+    else
+      Burner.turn_off(pid)
+      {:noreply, update_burners(burners, pid, %{status: false, timer: 0})}
+    end
   end
 
   def handle_call(:get_burners, _from, burners) do
@@ -71,19 +93,6 @@ defmodule Restaurant.Kitchen.Stove.Controller do
     %{pid: pid, timer: remaining_time} = Enum.at(burners, index)
     update_time = if remaining_time - time >= 0, do: remaining_time - time, else: 0
     {:noreply, update_burners(burners, pid, %{timer: update_time})}
-  end
-
-  def handle_info({:timer, pid}, burners) do
-    %{timer: remaining_time} = Enum.find(burners, &(&1.pid == pid))
-
-    if remaining_time > 0 do
-      Process.send_after(self(), {:timer, pid}, 1000)
-      update_time = if remaining_time - 1 > 0, do: remaining_time - 1, else: 0
-      {:noreply, update_burners(burners, pid, %{timer: update_time})}
-    else
-      Burner.turn_off(pid)
-      {:noreply, update_burners(burners, pid, %{status: false, timer: 0})}
-    end
   end
 
   defp update_burners(burners, pid, params) do
