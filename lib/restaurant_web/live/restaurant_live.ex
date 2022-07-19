@@ -48,14 +48,20 @@ defmodule RestaurantWeb.RestaurantLive do
 
   def handle_event("cancel", %{"order_id" => order_id_str}, socket) do
     order_id = to_integer_or(order_id_str)
-    Orders.cancel_order(order_id, &MoneyStorage.put/1)
+    Orders.cancel_order(order_id, &MoneyStorage.subtract/1)
 
     {:noreply, assign(socket, get_state())}
   end
 
-  def handle_event("buy_material", %{"material" => material}, socket) do
-    CoffeeMachine.put_material(String.to_atom(material), 1000)
-    # TODO:
+  def handle_event("buy_material", %{"material" => material_str}, socket) do
+    material = String.to_atom(material_str)
+    material_price = %{beans: %{price: 1000, amount: 1000}, milk: %{price: 2000, amount: 1000}}
+
+    with %{price: price, amount: amount} <- material_price[material],
+         {:ok, _} <- MoneyStorage.subtract(price) do
+      CoffeeMachine.put_material(material, amount)
+    end
+
     {:noreply, assign(socket, get_state())}
   end
 

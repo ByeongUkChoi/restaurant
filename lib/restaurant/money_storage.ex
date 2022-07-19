@@ -13,8 +13,8 @@ defmodule Restaurant.MoneyStorage do
     GenServer.call(__MODULE__, {:save, amount})
   end
 
-  def put(amount) do
-    GenServer.call(__MODULE__, {:put, amount})
+  def subtract(amount) do
+    GenServer.call(__MODULE__, {:subtract, amount})
   end
 
   def amount() do
@@ -29,9 +29,9 @@ defmodule Restaurant.MoneyStorage do
     {:reply, :ok, save_amount + amount}
   end
 
-  def handle_call({:put, put_amount}, _from, amount) do
-    if amount >= put_amount do
-      {:reply, :ok, amount - put_amount}
+  def handle_call({:subtract, subtraction_amount}, _from, amount) do
+    if amount >= subtraction_amount do
+      {:reply, :ok, amount - subtraction_amount}
     else
       {:reply, :error, amount}
     end
