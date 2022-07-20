@@ -30,11 +30,7 @@ defmodule Restaurant.MoneyStorage do
   end
 
   def handle_call({:subtract, subtraction_amount}, _from, amount) do
-    if amount >= subtraction_amount do
-      {:reply, :ok, amount - subtraction_amount}
-    else
-      {:reply, :error, amount}
-    end
+    {:reply, :ok, amount - subtraction_amount}
   end
 
   def handle_call(:amount, _from, amount) do

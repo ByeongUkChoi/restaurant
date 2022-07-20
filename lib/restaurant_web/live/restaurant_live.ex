@@ -58,7 +58,8 @@ defmodule RestaurantWeb.RestaurantLive do
     material_price = %{beans: %{price: 1000, amount: 1000}, milk: %{price: 2000, amount: 1000}}
 
     with %{price: price, amount: amount} <- material_price[material],
-         {:ok, _} <- MoneyStorage.subtract(price) do
+         true <- MoneyStorage.amount() >= amount,
+         :ok <- MoneyStorage.subtract(price) do
       CoffeeMachine.put_material(material, amount)
     end
 
@@ -90,7 +91,7 @@ defmodule RestaurantWeb.RestaurantLive do
   def handle_event("turn_on", %{"index" => index}, socket) do
     index
     |> to_integer_or()
-    |> Stove.turn_on(30)
+    |> Stove.turn_on(nil, 30)
 
     {:noreply, assign(socket, get_state())}
   end
