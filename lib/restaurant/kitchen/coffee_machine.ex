@@ -22,12 +22,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
   @extract_time 5
 
   # API
-  def start_link(groups_count) do
-    GenServer.start_link(
-      __MODULE__,
-      [groups_count: groups_count, materials: %{beans: 1000, milk: 1000}],
-      name: __MODULE__
-    )
+  def start_link(worker_supervisor) do
+    GenServer.start_link(__MODULE__, worker_supervisor, name: __MODULE__)
   end
 
   @spec extract(integer(), Menu.t()) :: :ok
@@ -44,14 +40,27 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
   end
 
   # Server
-  def init(groups_count: groups_count, materials: materials) do
+  def init(worker_supervisor) do
+    Process.send_after(self(), {:regist_workers, worker_supervisor}, 0)
+
+    {:ok, nil}
+  end
+
+  def handle_info({:regist_workers, worker_supervisor}, _) do
+    workers =
+      worker_supervisor
+      |> Supervisor.which_children()
+      |> Enum.map(fn {id, pid, _, _} ->
+        %{id: id, pid: pid, menu: nil, time: 0}
+      end)
+
     state = %{
-      groups_count: groups_count,
-      materials: materials,
-      groups: Enum.map(1..groups_count, &%{id: &1, menu: nil, time: 0})
+      groups_count: length(workers),
+      materials: %{beans: 1000, milk: 1000},
+      groups: workers
     }
 
-    {:ok, state}
+    {:noreply, state}
   end
 
   def handle_cast({:extract, group_id, menu}, state) do
