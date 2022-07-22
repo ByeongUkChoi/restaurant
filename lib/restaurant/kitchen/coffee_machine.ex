@@ -63,6 +63,23 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     {:noreply, state}
   end
 
+  def handle_info({:timer, group_id}, state) do
+    remaining_time = remaining_time(state, group_id)
+
+    if remaining_time > 0 do
+      Process.send_after(self(), {:timer, group_id}, 1000)
+      update_time = if remaining_time - 1 > 0, do: remaining_time - 1, else: 0
+      state = update_timer(state, group_id, update_time)
+
+      {:noreply, state}
+    else
+      menu = get_menu(state, group_id)
+      CompletedMenu.put(menu)
+      state = state |> set_menu(group_id, nil)
+      {:noreply, state}
+    end
+  end
+
   def handle_cast({:extract, group_id, menu}, state) do
     if remaining_time(state, group_id) == 0 do
       Process.send_after(self(), {:timer, group_id}, 0)
@@ -81,23 +98,6 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
 
   def handle_cast({:put_material, material, amount}, state) do
     {:noreply, state |> update_in([:materials, material], &(&1 + amount))}
-  end
-
-  def handle_info({:timer, group_id}, state) do
-    remaining_time = remaining_time(state, group_id)
-
-    if remaining_time > 0 do
-      Process.send_after(self(), {:timer, group_id}, 1000)
-      update_time = if remaining_time - 1 > 0, do: remaining_time - 1, else: 0
-      state = update_timer(state, group_id, update_time)
-
-      {:noreply, state}
-    else
-      menu = get_menu(state, group_id)
-      CompletedMenu.put(menu)
-      state = state |> set_menu(group_id, nil)
-      {:noreply, state}
-    end
   end
 
   defp remaining_time(state, group_id) do
