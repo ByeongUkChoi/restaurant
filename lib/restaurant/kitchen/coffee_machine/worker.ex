@@ -10,20 +10,20 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
     GenServer.start_link(__MODULE__, :no_args)
   end
 
-  def extract(menu) do
-    GenServer.call(__MODULE__, {:extract, menu})
+  def extract(menu, pid \\ __MODULE__) do
+    GenServer.cast(pid, {:extract, menu})
   end
 
   def init(:no_args) do
     {:ok, nil}
   end
 
-  def handle_call({:extract, menu}, _from, nil) do
+  def handle_cast({:extract, menu}, nil) do
     Process.send_after(self(), :finish, 5000)
     {:noreply, menu}
   end
 
-  def handle_call({:extract, _menu}, _from, _state) do
+  def handle_cast({:extract, _menu}, _state) do
     raise "already extracting"
   end
 

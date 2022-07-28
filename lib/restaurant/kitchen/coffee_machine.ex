@@ -4,8 +4,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
   """
   use GenServer
 
-  alias Restaurant.Kitchen.CompletedMenu
   alias Restaurant.Orders.Menu
+  alias Restaurant.Kitchen.CoffeeMachine.Worker
 
   @type state :: %{
           materials: %{beans: non_neg_integer(), milk: non_neg_integer()},
@@ -73,15 +73,15 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
 
       {:noreply, state}
     else
-      menu = get_menu(state, group_id)
-      CompletedMenu.put(menu)
-      state = state |> set_menu(group_id, nil)
-      {:noreply, state}
+      {:noreply, set_menu(state, group_id, nil)}
     end
   end
 
   def handle_cast({:extract, group_id, menu}, state) do
+    pid = state |> Map.get(:groups) |> Enum.find_value(&(&1.id == group_id && &1.pid))
+
     if remaining_time(state, group_id) == 0 do
+      Worker.extract(menu, pid)
       Process.send_after(self(), {:timer, group_id}, 0)
 
       state =
@@ -102,10 +102,6 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
 
   defp remaining_time(state, group_id) do
     Enum.find_value(state.groups, &(&1.id == group_id && &1.time))
-  end
-
-  defp get_menu(state, group_id) do
-    state.groups |> Enum.find_value(&(&1.id == group_id && &1.menu))
   end
 
   defp set_menu(state, group_id, menu) do
