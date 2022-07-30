@@ -17,6 +17,10 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
     GenServer.cast(pid, {:extract, menu})
   end
 
+  def state(pid \\ __MODULE__) do
+    GenServer.call(pid, :state)
+  end
+
   def init(:no_args) do
     {:ok, nil}
   end
@@ -28,6 +32,10 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
 
   def handle_cast({:extract, _menu}, _state) do
     raise "already extracting"
+  end
+
+  def handle_call(:state, _from, state) do
+    {:reply, state, state}
   end
 
   def handle_info(:timer, state) do

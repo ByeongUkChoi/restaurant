@@ -42,6 +42,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
   # Server
   def init(worker_supervisor) do
     Process.send_after(self(), {:regist_workers, worker_supervisor}, 0)
+    Process.send_after(self(), :timer, 0)
 
     {:ok, nil}
   end
@@ -63,26 +64,29 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     {:noreply, state}
   end
 
-  def handle_info({:timer, group_id}, state) do
-    remaining_time = remaining_time(state, group_id)
+  def handle_info(:timer, state) do
+    state =
+      state
+      |> Map.update!(:groups, fn groups ->
+        groups
+        |> Enum.map(fn
+          %{pid: pid} = group ->
+            case Worker.state(pid) do
+              %{time: time} -> Map.put(group, :time, time)
+              _ -> group
+            end
+        end)
+      end)
 
-    if remaining_time > 0 do
-      Process.send_after(self(), {:timer, group_id}, 1000)
-      update_time = if remaining_time - 1 > 0, do: remaining_time - 1, else: 0
-      state = update_timer(state, group_id, update_time)
-
-      {:noreply, state}
-    else
-      {:noreply, set_menu(state, group_id, nil)}
-    end
+    Process.send_after(self(), :timer, 1000)
+    {:noreply, state}
   end
 
   def handle_cast({:extract, group_id, menu}, state) do
-    pid = state |> Map.get(:groups) |> Enum.find_value(&(&1.id == group_id && &1.pid))
+    pid = get_pid(group_id, state)
 
     if remaining_time(state, group_id) == 0 do
       Worker.extract(menu, pid)
-      Process.send_after(self(), {:timer, group_id}, 0)
 
       state =
         state
@@ -98,6 +102,10 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
 
   def handle_cast({:put_material, material, amount}, state) do
     {:noreply, state |> update_in([:materials, material], &(&1 + amount))}
+  end
+
+  defp get_pid(group_id, state) do
+    state |> Map.get(:groups) |> Enum.find_value(&(&1.id == group_id && &1.pid))
   end
 
   defp remaining_time(state, group_id) do
