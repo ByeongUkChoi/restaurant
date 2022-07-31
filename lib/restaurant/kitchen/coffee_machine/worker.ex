@@ -49,7 +49,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
       {:noreply, state}
     else
       CompletedMenu.put(state.menu)
-      {:noreply, %{menu: nil, time: 0}}
+      {:noreply, nil}
     end
   end
 end

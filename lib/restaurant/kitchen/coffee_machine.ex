@@ -19,7 +19,6 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
         }
 
   @recipe %{americano: %{beans: 20}, latte: %{beans: 20, milk: 160}}
-  @extract_time 5
 
   # API
   def start_link(worker_supervisor) do
@@ -42,7 +41,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
   # Server
   def init(worker_supervisor) do
     Process.send_after(self(), {:regist_workers, worker_supervisor}, 0)
-    Process.send_after(self(), :timer, 0)
+    Process.send_after(self(), {:timer, true}, 0)
 
     {:ok, nil}
   end
@@ -64,7 +63,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     {:noreply, state}
   end
 
-  def handle_info(:timer, state) do
+  def handle_info({:timer, continue?}, state) do
     state =
       state
       |> Map.update!(:groups, fn groups ->
@@ -72,13 +71,16 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
         |> Enum.map(fn
           %{pid: pid} = group ->
             case Worker.state(pid) do
-              %{time: time} -> Map.put(group, :time, time)
+              %{menu: menu, time: time} -> group |> Map.put(:menu, menu) |> Map.put(:time, time)
               _ -> group
             end
         end)
       end)
 
-    Process.send_after(self(), :timer, 1000)
+    if continue? do
+      Process.send_after(self(), {:timer, true}, 1000)
+    end
+
     {:noreply, state}
   end
 
@@ -87,13 +89,9 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
 
     if remaining_time(state, group_id) == 0 do
       Worker.extract(menu, pid)
+      state = pop_materials(state, menu)
 
-      state =
-        state
-        |> set_menu(group_id, menu)
-        |> pop_materials(menu)
-        |> update_timer(group_id, @extract_time)
-
+      Process.send_after(self(), {:timer, false}, 0)
       {:noreply, state}
     else
       {:noreply, state}
@@ -112,17 +110,6 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     Enum.find_value(state.groups, &(&1.id == group_id && &1.time))
   end
 
-  defp set_menu(state, group_id, menu) do
-    state
-    |> Map.update!(:groups, fn groups ->
-      groups
-      |> Enum.map(fn
-        %{id: ^group_id} = group -> Map.put(group, :menu, menu)
-        group -> group
-      end)
-    end)
-  end
-
   defp pop_materials(state, menu) do
     @recipe
     |> Map.get(String.to_atom(menu.name))
@@ -136,17 +123,6 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     |> Enum.reduce(state, fn {material, amount}, state ->
       state
       |> update_in([:materials, material], &(&1 - amount))
-    end)
-  end
-
-  defp update_timer(state, group_id, time) do
-    state
-    |> Map.update!(:groups, fn groups ->
-      groups
-      |> Enum.map(fn
-        %{id: ^group_id} = group -> Map.put(group, :time, time)
-        group -> group
-      end)
     end)
   end
 
