@@ -41,7 +41,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
   # Server
   def init(worker_supervisor) do
     Process.send_after(self(), {:regist_workers, worker_supervisor}, 0)
-    Process.send_after(self(), {:timer, true}, 0)
+    Process.send_after(self(), :timer, 0)
 
     {:ok, nil}
   end
@@ -63,7 +63,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     {:noreply, state}
   end
 
-  def handle_info({:timer, continue?}, state) do
+  def handle_info(:timer, state) do
     state =
       state
       |> Map.update!(:groups, fn groups ->
@@ -77,9 +77,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
         end)
       end)
 
-    if continue? do
-      Process.send_after(self(), {:timer, true}, 1000)
-    end
+    Process.send_after(self(), :timer, 1000)
 
     {:noreply, state}
   end
@@ -91,7 +89,20 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
       Worker.extract(menu, pid)
       state = pop_materials(state, menu)
 
-      Process.send_after(self(), {:timer, false}, 0)
+      state =
+        state
+        |> Map.update!(:groups, fn groups ->
+          groups
+          |> Enum.map(fn
+            %{id: ^group_id} = group ->
+              %{time: time} = group_id |> get_pid(state) |> Worker.state()
+              Map.put(group, :time, time)
+
+            group ->
+              group
+          end)
+        end)
+
       {:noreply, state}
     else
       {:noreply, state}

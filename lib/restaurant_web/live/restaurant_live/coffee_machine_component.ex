@@ -32,7 +32,7 @@ defmodule RestaurantWeb.RestaurantLive.CoffeeMachineComponent do
             <td><%= group.id %></td>
             <td><%= group.time %></td>
             <td>
-            <%= if group.time == 0 do %>
+            <%= if is_nil(group.menu) do %>
               <%= for menu <- @menus do %>
                 <button phx-click="extract_coffee" phx-value-id={group.id} phx-value-menu_id={menu.id} ><%= menu.name %></button>
               <% end %>
