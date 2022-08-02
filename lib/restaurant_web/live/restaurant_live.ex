@@ -121,11 +121,14 @@ defmodule RestaurantWeb.RestaurantLive do
   end
 
   defp get_state() do
+    ref = make_ref()
+    self = self()
+
     [
       menus: Orders.get_menus(),
       burners: Stove.get_burners(),
       orders: Orders.get_orders(),
-      coffee_machine: CoffeeMachine.state(),
+      coffee_machine: CoffeeMachine.state(ref, self),
       completed_menus: CompletedMenu.get_all(),
       money: MoneyStorage.amount()
     ]

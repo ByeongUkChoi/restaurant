@@ -15,7 +15,9 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
               required(:id) => integer(),
               required(:menu) => Menu.t() | nil,
               required(:time) => non_neg_integer()
-            })
+            }),
+          ref: reference(),
+          parent: pid()
         }
 
   @recipe %{americano: %{beans: 20}, latte: %{beans: 20, milk: 160}}
@@ -34,8 +36,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     GenServer.cast(__MODULE__, {:put_material, material, amount})
   end
 
-  def state() do
-    GenServer.call(__MODULE__, :state)
+  def state(ref, parent) do
+    GenServer.call(__MODULE__, {:state, ref, parent})
   end
 
   # Server
@@ -72,6 +74,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
           %{pid: pid} = group ->
             case Worker.state(pid) do
               %{menu: menu, time: time} -> group |> Map.put(:menu, menu) |> Map.put(:time, time)
+              nil -> group |> Map.put(:menu, nil) |> Map.put(:time, 0)
               _ -> group
             end
         end)
@@ -137,7 +140,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     end)
   end
 
-  def handle_call(:state, _from, state) do
+  def handle_call({:state, ref, parent}, _from, state) do
+    state = state |> Map.put(:ref, ref) |> Map.put(:parent, parent)
     {:reply, state, state}
   end
 end
