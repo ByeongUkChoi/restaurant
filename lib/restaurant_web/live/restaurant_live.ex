@@ -26,16 +26,12 @@ defmodule RestaurantWeb.RestaurantLive do
   end
 
   def mount(_params, _session, socket) do
-    start_timer(1000)
+    Phoenix.PubSub.subscribe(Restaurant.PubSub, "restaurant_live")
 
     {:ok, assign(socket, get_state())}
   end
 
-  defp start_timer(interval) do
-    :timer.send_interval(interval, self(), :clock_tick)
-  end
-
-  def handle_info(:clock_tick, socket) do
+  def handle_info(:fetch_state, socket) do
     {:noreply, assign(socket, get_state())}
   end
 
@@ -121,14 +117,11 @@ defmodule RestaurantWeb.RestaurantLive do
   end
 
   defp get_state() do
-    ref = make_ref()
-    self = self()
-
     [
       menus: Orders.get_menus(),
       burners: Stove.get_burners(),
       orders: Orders.get_orders(),
-      coffee_machine: CoffeeMachine.state(ref, self),
+      coffee_machine: CoffeeMachine.state(),
       completed_menus: CompletedMenu.get_all(),
       money: MoneyStorage.amount()
     ]

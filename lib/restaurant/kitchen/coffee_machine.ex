@@ -15,9 +15,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
               required(:id) => integer(),
               required(:menu) => Menu.t() | nil,
               required(:time) => non_neg_integer()
-            }),
-          ref: reference(),
-          parent: pid()
+            })
         }
 
   @recipe %{americano: %{beans: 20}, latte: %{beans: 20, milk: 160}}
@@ -36,8 +34,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     GenServer.cast(__MODULE__, {:put_material, material, amount})
   end
 
-  def state(ref, parent) do
-    GenServer.call(__MODULE__, {:state, ref, parent})
+  def state() do
+    GenServer.call(__MODULE__, :state)
   end
 
   # Server
@@ -81,6 +79,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
       end)
 
     Process.send_after(self(), :timer, 1000)
+
+    Phoenix.PubSub.broadcast(Restaurant.PubSub, "restaurant_live", :fetch_state)
 
     {:noreply, state}
   end
@@ -140,8 +140,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     end)
   end
 
-  def handle_call({:state, ref, parent}, _from, state) do
-    state = state |> Map.put(:ref, ref) |> Map.put(:parent, parent)
+  def handle_call(:state, _from, state) do
     {:reply, state, state}
   end
 end
