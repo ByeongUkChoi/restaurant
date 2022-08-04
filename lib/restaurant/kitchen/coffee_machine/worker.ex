@@ -1,5 +1,5 @@
 defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
-  use GenServer
+  use GenServer, restart: :transient
 
   alias Restaurant.Orders.Menu
   alias Restaurant.Kitchen.CompletedMenu
@@ -25,13 +25,18 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
     {:ok, nil}
   end
 
+  def terminate(_reason, _state) do
+    # TODO: auto restart
+    :normal
+  end
+
   def handle_cast({:extract, menu}, nil) do
     Process.send_after(self(), :timer, 0)
     {:noreply, %{menu: menu, time: 5}}
   end
 
-  def handle_cast({:extract, _menu}, _state) do
-    raise "already extracting"
+  def handle_cast({:extract, _menu}, state) do
+    {:noreply, state}
   end
 
   def handle_call(:state, _from, state) do
@@ -39,6 +44,10 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
   end
 
   def handle_info(:timer, state) do
+    if Enum.random(1..100) == 1 do
+      raise "worker crash!"
+    end
+
     remaining_time = state.time
 
     if remaining_time > 0 do
