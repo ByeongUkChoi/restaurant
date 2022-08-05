@@ -14,7 +14,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
             list(%{
               required(:id) => integer(),
               required(:menu) => Menu.t() | nil,
-              required(:time) => non_neg_integer()
+              required(:time) => non_neg_integer(),
+              required(:worker_supervisor) => list(pid())
             })
         }
 
@@ -56,9 +57,23 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     state = %{
       groups_count: length(workers),
       materials: %{beans: 1000, milk: 1000},
-      groups: workers
+      groups: workers,
+      worker_supervisor: worker_supervisor
     }
 
+    pids = Enum.map(workers, & &1.pid)
+    Process.send_after(self(), {:monitor, pids}, 0)
+
+    {:noreply, state}
+  end
+
+  def handle_info({:monitor, pids}, state) do
+    Enum.each(pids, &Process.link/1)
+
+    {:noreply, state}
+  end
+
+  def handle_info({:DOWN, _ref, :process, _pid, _}, state) do
     {:noreply, state}
   end
 

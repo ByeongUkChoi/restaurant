@@ -44,8 +44,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
   end
 
   def handle_info({:timer, parent}, state) do
-    if Enum.random(1..100) == 1 do
-      raise "worker crash!"
+    if Enum.random(1..2) == 1 do
+      raise "worker crash test!"
     end
 
     Process.send_after(self(), {:broadcast, parent}, 0)
