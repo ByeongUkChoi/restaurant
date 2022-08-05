@@ -41,7 +41,6 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
   # Server
   def init(worker_supervisor) do
     Process.send_after(self(), {:regist_workers, worker_supervisor}, 0)
-    Process.send_after(self(), :timer, 0)
 
     {:ok, nil}
   end
@@ -63,7 +62,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     {:noreply, state}
   end
 
-  def handle_info(:timer, state) do
+  def handle_info(:fetch_state, state) do
     state =
       state
       |> Map.update!(:groups, fn groups ->
@@ -78,8 +77,6 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
         end)
       end)
 
-    Process.send_after(self(), :timer, 1000)
-
     Phoenix.PubSub.broadcast(Restaurant.PubSub, "restaurant_live", :fetch_state)
 
     {:noreply, state}
@@ -89,7 +86,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     pid = get_pid(group_id, state)
 
     if remaining_time(state, group_id) == 0 do
-      Worker.extract(menu, pid)
+      Worker.extract(menu, pid, self())
       state = pop_materials(state, menu)
 
       state =

@@ -13,8 +13,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
     GenServer.start_link(__MODULE__, :no_args)
   end
 
-  def extract(menu, pid \\ __MODULE__) do
-    GenServer.cast(pid, {:extract, menu})
+  def extract(menu, pid, parent) do
+    GenServer.cast(pid, {:extract, menu, parent})
   end
 
   def state(pid \\ __MODULE__) do
@@ -30,12 +30,12 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
     :normal
   end
 
-  def handle_cast({:extract, menu}, nil) do
-    Process.send_after(self(), :timer, 0)
+  def handle_cast({:extract, menu, parent}, nil) do
+    Process.send_after(self(), {:timer, parent}, 1000)
     {:noreply, %{menu: menu, time: 5}}
   end
 
-  def handle_cast({:extract, _menu}, state) do
+  def handle_cast({:extract, _menu, _parent}, state) do
     {:noreply, state}
   end
 
@@ -43,15 +43,17 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
     {:reply, state, state}
   end
 
-  def handle_info(:timer, state) do
+  def handle_info({:timer, parent}, state) do
     if Enum.random(1..100) == 1 do
       raise "worker crash!"
     end
 
+    Process.send_after(self(), {:broadcast, parent}, 0)
+
     remaining_time = state.time
 
     if remaining_time > 0 do
-      Process.send_after(self(), :timer, 1000)
+      Process.send_after(self(), {:timer, parent}, 1000)
       update_time = if remaining_time - 1 > 0, do: remaining_time - 1, else: 0
       state = Map.put(state, :time, update_time)
 
@@ -60,5 +62,10 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
       CompletedMenu.put(state.menu)
       {:noreply, nil}
     end
+  end
+
+  def handle_info({:broadcast, parent}, state) do
+    Process.send_after(parent, :fetch_state, 0)
+    {:noreply, state}
   end
 end
