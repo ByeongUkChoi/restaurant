@@ -14,16 +14,16 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
             list(%{
               required(:id) => integer(),
               required(:menu) => Menu.t() | nil,
-              required(:time) => non_neg_integer(),
-              required(:worker_supervisor) => list(pid())
-            })
+              required(:time) => non_neg_integer()
+            }),
+          workers: list(pid())
         }
 
   @recipe %{americano: %{beans: 20}, latte: %{beans: 20, milk: 160}}
 
   # API
-  def start_link(worker_supervisor) do
-    GenServer.start_link(__MODULE__, worker_supervisor, name: __MODULE__)
+  def start_link(_) do
+    GenServer.start_link(__MODULE__, :no_args, name: __MODULE__)
   end
 
   @spec extract(integer(), Menu.t()) :: :ok
@@ -40,41 +40,14 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
   end
 
   # Server
-  def init(worker_supervisor) do
-    Process.send_after(self(), {:regist_workers, worker_supervisor}, 0)
-
-    {:ok, nil}
-  end
-
-  def handle_info({:regist_workers, worker_supervisor}, _) do
-    workers =
-      worker_supervisor
-      |> Supervisor.which_children()
-      |> Enum.map(fn {id, pid, _, _} ->
-        %{id: id, pid: pid, menu: nil, time: 0}
-      end)
-
+  def init(:no_args) do
     state = %{
-      groups_count: length(workers),
+      groups_count: 0,
       materials: %{beans: 1000, milk: 1000},
-      groups: workers,
-      worker_supervisor: worker_supervisor
+      groups: []
     }
 
-    pids = Enum.map(workers, & &1.pid)
-    Process.send_after(self(), {:monitor, pids}, 0)
-
-    {:noreply, state}
-  end
-
-  def handle_info({:monitor, pids}, state) do
-    Enum.each(pids, &Process.link/1)
-
-    {:noreply, state}
-  end
-
-  def handle_info({:DOWN, _ref, :process, _pid, _}, state) do
-    {:noreply, state}
+    {:ok, state}
   end
 
   def handle_info(:fetch_state, state) do
