@@ -3,6 +3,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
 
   alias Restaurant.Orders.Menu
   alias Restaurant.Kitchen.CompletedMenu
+  alias Restaurant.Kitchen.CoffeeMachine
 
   @type state :: %{
           required(:menu) => Menu.t() | nil,
@@ -22,6 +23,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
   end
 
   def init(:no_args) do
+    CoffeeMachine.regist_worker(self())
     {:ok, nil}
   end
 

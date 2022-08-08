@@ -26,6 +26,10 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     GenServer.start_link(__MODULE__, :no_args, name: __MODULE__)
   end
 
+  def regist_worker(worker) do
+    GenServer.cast(__MODULE__, {:regist_worker, worker})
+  end
+
   @spec extract(integer(), Menu.t()) :: :ok
   def extract(group_id, menu) do
     GenServer.cast(__MODULE__, {:extract, group_id, menu})
@@ -39,12 +43,17 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     GenServer.call(__MODULE__, :state)
   end
 
+  def groups() do
+    GenServer.call(__MODULE__, :groups)
+  end
+
   # Server
   def init(:no_args) do
     state = %{
       groups_count: 0,
       materials: %{beans: 1000, milk: 1000},
-      groups: []
+      groups: [],
+      workers: []
     }
 
     {:ok, state}
@@ -66,6 +75,12 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
       end)
 
     Phoenix.PubSub.broadcast(Restaurant.PubSub, "restaurant_live", :fetch_state)
+
+    {:noreply, state}
+  end
+
+  def handle_cast({:regist_worker, worker}, state) do
+    state = state |> Map.update!(:workers, &[worker | &1])
 
     {:noreply, state}
   end
@@ -126,6 +141,15 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
   end
 
   def handle_call(:state, _from, state) do
+    {:reply, state, state}
+  end
+
+  def handle_call(:groups, _from, state) do
+    state.workers
+    |> Enum.map(fn worker ->
+      Worker.state(worker)
+    end)
+
     {:reply, state, state}
   end
 end
