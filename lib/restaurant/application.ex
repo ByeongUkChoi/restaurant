@@ -22,6 +22,8 @@ defmodule Restaurant.Application do
       # {Restaurant.Kitchen.Stove, 4},
       Restaurant.Kitchen.CoffeeMachine,
       {Restaurant.Kitchen.CoffeeMachine.WorkerSupervisor, 3},
+      # New CoffeeMachineSupervisor
+      Restaurant.Kitchen.CoffeeMachineSupervisor,
       Restaurant.OrderedList,
       Restaurant.Kitchen.CompletedMenu,
       Restaurant.MoneyStorage
