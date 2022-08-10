@@ -1,4 +1,4 @@
-defmodule Restaurant.Kitchen.CoffeeMachineSupervisor do
+defmodule Restaurant.Kitchen.CoffeeMachine.Supervisor do
   @moduledoc """
   """
   use Supervisor
@@ -8,7 +8,11 @@ defmodule Restaurant.Kitchen.CoffeeMachineSupervisor do
   end
 
   def init(:no_args) do
-    children = [Restaurant.Kitchen.CoffeeMachine.Stash]
+    children = [
+      Restaurant.Kitchen.CoffeeMachine.Stash,
+      Restaurant.Kitchen.CoffeeMachine.WorkerSupervisor
+    ]
+
     Supervisor.init(children, strategy: :one_for_one)
   end
 end

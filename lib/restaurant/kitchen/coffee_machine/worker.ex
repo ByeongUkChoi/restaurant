@@ -6,8 +6,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
   alias Restaurant.Kitchen.CoffeeMachine
 
   @type state :: %{
-          required(:menu) => Menu.t() | nil,
-          required(:time) => non_neg_integer()
+          required(:menu) => Menu.t() | nil
         }
 
   def start_link(_) do
@@ -16,10 +15,6 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
 
   def extract(menu, pid, parent) do
     GenServer.cast(pid, {:extract, menu, parent})
-  end
-
-  def state(pid \\ __MODULE__) do
-    GenServer.call(pid, :state)
   end
 
   def init(:no_args) do
@@ -39,10 +34,6 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
 
   def handle_cast({:extract, _menu, _parent}, state) do
     {:noreply, state}
-  end
-
-  def handle_call(:state, _from, state) do
-    {:reply, state, state}
   end
 
   def handle_info({:timer, parent}, state) do

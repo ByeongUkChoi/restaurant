@@ -6,6 +6,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
 
   alias Restaurant.Orders.Menu
   alias Restaurant.Kitchen.CoffeeMachine.Worker
+  alias Restaurant.Kitchen.CoffeeMachine.Stash
 
   @type state :: %{
           materials: %{beans: non_neg_integer(), milk: non_neg_integer()},
@@ -66,7 +67,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
         groups
         |> Enum.map(fn
           %{pid: pid} = group ->
-            case Worker.state(pid) do
+            case Stash.state(pid) do
               %{menu: menu, time: time} -> group |> Map.put(:menu, menu) |> Map.put(:time, time)
               nil -> group |> Map.put(:menu, nil) |> Map.put(:time, 0)
               _ -> group
@@ -98,7 +99,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
           groups
           |> Enum.map(fn
             %{id: ^group_id} = group ->
-              %{time: time} = group_id |> get_pid(state) |> Worker.state()
+              %{time: time} = group_id |> get_pid(state) |> Stash.state()
               Map.put(group, :time, time)
 
             group ->
