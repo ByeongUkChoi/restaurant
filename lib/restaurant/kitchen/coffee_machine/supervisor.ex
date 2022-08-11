@@ -10,7 +10,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Supervisor do
   def init(:no_args) do
     children = [
       Restaurant.Kitchen.CoffeeMachine.Stash,
-      Restaurant.Kitchen.CoffeeMachine.WorkerSupervisor
+      {Restaurant.Kitchen.CoffeeMachine.WorkerSupervisor, 3}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

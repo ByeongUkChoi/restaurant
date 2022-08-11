@@ -3,23 +3,25 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
 
   alias Restaurant.Orders.Menu
   alias Restaurant.Kitchen.CompletedMenu
-  alias Restaurant.Kitchen.CoffeeMachine
+  alias Restaurant.Kitchen.CoffeeMachine.Stash
 
   @type state :: %{
-          required(:menu) => Menu.t() | nil
+          required(:id) => pos_integer(),
+          required(:menu) => Menu.t() | nil,
+          required(:time) => non_neg_integer()
         }
 
-  def start_link(_) do
-    GenServer.start_link(__MODULE__, :no_args)
+  def start_link(id) do
+    GenServer.start_link(__MODULE__, id)
   end
 
   def extract(menu, pid, parent) do
     GenServer.cast(pid, {:extract, menu, parent})
   end
 
-  def init(:no_args) do
-    CoffeeMachine.regist_worker(self())
-    {:ok, nil}
+  def init(id) do
+    # CoffeeMachine.regist_worker(self())
+    {:ok, %{id: id, menu: nil, time: 0}}
   end
 
   def terminate(_reason, _state) do
@@ -58,7 +60,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
   end
 
   def handle_info({:broadcast, parent}, state) do
-    Process.send_after(parent, :fetch_state, 0)
+    Stash.Process.send_after(parent, :fetch_state, 0)
     {:noreply, state}
   end
 end

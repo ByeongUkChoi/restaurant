@@ -19,11 +19,8 @@ defmodule Restaurant.Application do
       # Start a worker by calling: Restaurant.Worker.start_link(arg)
       # {Restaurant.Worker, arg}
       {Restaurant.Kitchen.Stove.Supervisor, 4},
-      # {Restaurant.Kitchen.Stove, 4},
-      Restaurant.Kitchen.CoffeeMachine,
-      {Restaurant.Kitchen.CoffeeMachine.WorkerSupervisor, 3},
       # New CoffeeMachineSupervisor
-      Restaurant.Kitchen.CoffeeMachineSupervisor,
+      Restaurant.Kitchen.CoffeeMachine.Supervisor,
       Restaurant.OrderedList,
       Restaurant.Kitchen.CompletedMenu,
       Restaurant.MoneyStorage

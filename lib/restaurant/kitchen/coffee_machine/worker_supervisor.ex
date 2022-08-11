@@ -9,7 +9,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine.WorkerSupervisor do
 
   @impl true
   def init(workers_count) do
-    children = 1..workers_count |> Enum.map(&Supervisor.child_spec({Worker, []}, id: &1))
+    children = 1..workers_count |> Enum.map(&Supervisor.child_spec({Worker, &1}, id: &1))
 
     Supervisor.init(children, strategy: :one_for_one)
   end
