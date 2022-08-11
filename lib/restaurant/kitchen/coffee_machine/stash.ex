@@ -1,14 +1,12 @@
 defmodule Restaurant.Kitchen.CoffeeMachine.Stash do
   use GenServer
 
-  @type state :: %{
-          groups:
-            list(%{
-              required(:id) => integer(),
-              required(:menu) => map() | nil,
-              required(:time) => non_neg_integer()
-            })
-        }
+  @type state ::
+          list(%{
+            required(:id) => integer(),
+            required(:menu) => map() | nil,
+            required(:time) => non_neg_integer()
+          })
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, :no_args)
@@ -23,14 +21,22 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Stash do
   end
 
   def init(:no_args) do
-    {:ok, %{groups: []}}
+    {:ok, []}
   end
 
   def handle_call(:state, _from, state) do
     {:reply, state, state}
   end
 
-  def handle_cast({:state, id, menu, time}, state) do
+  def handle_cast({:state, id, menu, time}, list) do
+    item = %{id: id, menu: menu, time: time}
+
+    state =
+      case Enum.find_index(list, &(&1.id == id)) do
+        nil -> [item | list]
+        index -> List.update_at(list, index, fn _ -> item end)
+      end
+
     {:noreply, state}
   end
 end

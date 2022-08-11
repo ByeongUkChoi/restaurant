@@ -15,8 +15,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
     GenServer.start_link(__MODULE__, id)
   end
 
-  def extract(menu, pid, parent) do
-    GenServer.cast(pid, {:extract, menu, parent})
+  def extract(menu, pid) do
+    GenServer.cast(pid, {:extract, menu})
   end
 
   def init(id) do
@@ -29,8 +29,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
     :normal
   end
 
-  def handle_cast({:extract, menu, parent}, nil) do
-    Process.send_after(self(), {:timer, parent}, 1000)
+  def handle_cast({:extract, menu}, nil) do
+    Process.send_after(self(), :timer, 1000)
     {:noreply, %{menu: menu, time: 5}}
   end
 
@@ -38,17 +38,17 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
     {:noreply, state}
   end
 
-  def handle_info({:timer, parent}, state) do
+  def handle_info(:timer, state) do
     if Enum.random(1..2) == 1 do
       raise "worker crash test!"
     end
 
-    Process.send_after(self(), {:broadcast, parent}, 0)
+    Process.send_after(self(), :put_stash, 0)
 
     remaining_time = state.time
 
     if remaining_time > 0 do
-      Process.send_after(self(), {:timer, parent}, 1000)
+      Process.send_after(self(), :timer, 1000)
       update_time = if remaining_time - 1 > 0, do: remaining_time - 1, else: 0
       state = Map.put(state, :time, update_time)
 
@@ -59,8 +59,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
     end
   end
 
-  def handle_info({:broadcast, parent}, state) do
-    Stash.Process.send_after(parent, :fetch_state, 0)
+  def handle_info(:put_stash, state) do
+    Stash.put_state(state.id, state.menu, state.time)
     {:noreply, state}
   end
 end

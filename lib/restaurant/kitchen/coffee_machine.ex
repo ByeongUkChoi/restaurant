@@ -10,14 +10,12 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
 
   @type state :: %{
           materials: %{beans: non_neg_integer(), milk: non_neg_integer()},
-          groups_count: non_neg_integer(),
           groups:
             list(%{
               required(:id) => integer(),
               required(:menu) => Menu.t() | nil,
               required(:time) => non_neg_integer()
-            }),
-          workers: list(pid())
+            })
         }
 
   @recipe %{americano: %{beans: 20}, latte: %{beans: 20, milk: 160}}
@@ -25,10 +23,6 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
   # API
   def start_link(_) do
     GenServer.start_link(__MODULE__, :no_args, name: __MODULE__)
-  end
-
-  def regist_worker(worker) do
-    GenServer.cast(__MODULE__, {:regist_worker, worker})
   end
 
   @spec extract(integer(), Menu.t()) :: :ok
@@ -44,44 +38,17 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     GenServer.call(__MODULE__, :state)
   end
 
-  def groups() do
-    GenServer.call(__MODULE__, :groups)
-  end
-
   # Server
   def init(:no_args) do
-    state = %{
-      groups_count: 0,
-      materials: %{beans: 1000, milk: 1000},
-      groups: [],
-      workers: []
-    }
+    state = %{materials: %{beans: 1000, milk: 1000}, groups: []}
 
     {:ok, state}
   end
 
   def handle_info(:fetch_state, state) do
-    state =
-      state
-      |> Map.update!(:groups, fn groups ->
-        groups
-        |> Enum.map(fn
-          %{pid: pid} = group ->
-            case Stash.state(pid) do
-              %{menu: menu, time: time} -> group |> Map.put(:menu, menu) |> Map.put(:time, time)
-              nil -> group |> Map.put(:menu, nil) |> Map.put(:time, 0)
-              _ -> group
-            end
-        end)
-      end)
+    state = state |> Map.update!(:groups, fn _groups -> Stash.state() end)
 
     Phoenix.PubSub.broadcast(Restaurant.PubSub, "restaurant_live", :fetch_state)
-
-    {:noreply, state}
-  end
-
-  def handle_cast({:regist_worker, worker}, state) do
-    state = state |> Map.update!(:workers, &[worker | &1])
 
     {:noreply, state}
   end
@@ -90,22 +57,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     pid = get_pid(group_id, state)
 
     if remaining_time(state, group_id) == 0 do
-      Worker.extract(menu, pid, self())
+      Worker.extract(menu, pid)
       state = pop_materials(state, menu)
-
-      state =
-        state
-        |> Map.update!(:groups, fn groups ->
-          groups
-          |> Enum.map(fn
-            %{id: ^group_id} = group ->
-              %{time: time} = group_id |> get_pid(state) |> Stash.state()
-              Map.put(group, :time, time)
-
-            group ->
-              group
-          end)
-        end)
 
       {:noreply, state}
     else
@@ -142,15 +95,6 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
   end
 
   def handle_call(:state, _from, state) do
-    {:reply, state, state}
-  end
-
-  def handle_call(:groups, _from, state) do
-    state.workers
-    |> Enum.map(fn worker ->
-      Worker.state(worker)
-    end)
-
     {:reply, state, state}
   end
 end
