@@ -30,8 +30,6 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
   end
 
   def handle_info(:init_state, state) do
-    Stash.get_state(state.id) |> IO.inspect()
-
     if state = Stash.get_state(state.id) do
       Process.send_after(self(), :timer, 1000)
       {:noreply, state}

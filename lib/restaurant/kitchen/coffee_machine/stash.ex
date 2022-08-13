@@ -36,7 +36,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Stash do
     {:reply, Enum.find(list, &(&1.id == id)), list}
   end
 
-  def handle_cast({:pugstate, id, menu, time}, list) do
+  def handle_cast({:put_state, id, menu, time}, list) do
     item = %{id: id, menu: menu, time: time}
 
     state =
