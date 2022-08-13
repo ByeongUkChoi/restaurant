@@ -20,7 +20,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
   end
 
   def init(id) do
-    # CoffeeMachine.regist_worker(self())
+    Process.send_after(self(), :init_state, 1000)
     {:ok, %{id: id, menu: nil, time: 0}}
   end
 
@@ -29,17 +29,19 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
     :normal
   end
 
-  def handle_cast({:extract, menu}, nil) do
-    Process.send_after(self(), :timer, 1000)
-    {:noreply, %{menu: menu, time: 5}}
-  end
+  def handle_info(:init_state, state) do
+    Stash.get_state(state.id) |> IO.inspect()
 
-  def handle_cast({:extract, _menu, _parent}, state) do
-    {:noreply, state}
+    if state = Stash.get_state(state.id) do
+      Process.send_after(self(), :timer, 1000)
+      {:noreply, state}
+    else
+      {:noreply, state}
+    end
   end
 
   def handle_info(:timer, state) do
-    if Enum.random(1..2) == 1 do
+    if Enum.random(1..2) == 3 do
       raise "worker crash test!"
     end
 
@@ -61,6 +63,15 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
 
   def handle_info(:put_stash, state) do
     Stash.put_state(state.id, state.menu, state.time)
+    {:noreply, state}
+  end
+
+  def handle_cast({:extract, menu}, %{menu: nil}) do
+    Process.send_after(self(), :timer, 1000)
+    {:noreply, %{menu: menu, time: 5}}
+  end
+
+  def handle_cast({:extract, _menu, _parent}, state) do
     {:noreply, state}
   end
 end
