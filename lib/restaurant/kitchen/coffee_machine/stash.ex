@@ -23,12 +23,16 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Stash do
     GenServer.call(__MODULE__, {:get_worker, id})
   end
 
+  def take_out_material(material, amount) do
+    GenServer.call(__MODULE__, {:take_out_material, material, amount})
+  end
+
   def put_worker(id, menu, time) do
     GenServer.cast(__MODULE__, {:put_worker, id, menu, time})
   end
 
   def take_off_material(material, amout) do
-      GenServer.call(__MODULE__, {:take_off_material, material, amount})
+    GenServer.call(__MODULE__, {:take_off_material, material, amount})
   end
 
   def init(:no_args) do
@@ -44,8 +48,17 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Stash do
     {:reply, worker, state}
   end
 
-  def handle_cast({:take_off_material, material, amount}, _from, state) do
-    {:reply, worker, put_in(state, [:materials, material], get_in(state, [:materials, material] - amount))}
+  def handle_call({:take_out_material, material, amount}, _from, state) do
+    remain_amount = get_in(state, [:materials, material])
+
+    with {:has_material, remain_amount} when remain_amount != nil <-
+           {:has_material, remain_amount},
+         {:enable_take_out, true} <- {:enable_take_out, remain_amount >= amount} do
+      put_in(state, [:materials, material], remain_amount - amount)
+      {:reply, :ok, state}
+    else
+      _ -> {:reply, :error, state}
+    end
   end
 
   def handle_cast({:put_worker, id, menu, time}, %{workers: workers} = state) do

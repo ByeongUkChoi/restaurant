@@ -7,6 +7,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
   alias Restaurant.Kitchen.CoffeeMachine.Stash
 
   def extract(menu, pid) do
+    # TODO: material, transaction
+    # Stash.take_out_material()
     Worker.extract(menu, pid)
   end
 
