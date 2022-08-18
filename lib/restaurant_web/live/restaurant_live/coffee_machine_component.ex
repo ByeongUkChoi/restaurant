@@ -27,17 +27,17 @@ defmodule RestaurantWeb.RestaurantLive.CoffeeMachineComponent do
         <th>id</th>
         <th>timer</th>
         <th>extract</th>
-        <%= for group <- @state.groups do %>
+        <%= for worker <- @state.workers do %>
           <tr>
-            <td><%= group.id %></td>
-            <td><%= group.time %></td>
+            <td><%= worker.id %></td>
+            <td><%= worker.time %></td>
             <td>
-            <%= if is_nil(group.menu) do %>
+            <%= if is_nil(worker.menu) do %>
               <%= for menu <- @menus do %>
-                <button phx-click="extract_coffee" phx-value-id={group.id} phx-value-menu_id={menu.id} ><%= menu.name %></button>
+                <button phx-click="extract_coffee" phx-value-id={worker.id} phx-value-menu_id={menu.id} ><%= menu.name %></button>
               <% end %>
             <% else %>
-                <button disabled><%= group.menu.name %></button>
+                <button disabled><%= worker.menu.name %></button>
             <% end %>
             </td>
           </tr>

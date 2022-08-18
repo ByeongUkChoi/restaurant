@@ -31,12 +31,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Stash do
     GenServer.cast(__MODULE__, {:put_worker, id, menu, time})
   end
 
-  def take_off_material(material, amout) do
-    GenServer.call(__MODULE__, {:take_off_material, material, amount})
-  end
-
   def init(:no_args) do
-    {:ok, []}
+    {:ok, %{materials: %{beans: 1000, milk: 1000}, workers: []}}
   end
 
   def handle_call(:state, _from, state) do

@@ -30,6 +30,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
   end
 
   def handle_info(:init_state, state) do
+    Process.send_after(self(), :put_stash, 0)
+
     if worker = Stash.get_worker(state.id) do
       Process.send_after(self(), :timer, 1000)
       {:noreply, state |> Map.put(:menu, worker.menu) |> Map.put(:time, worker.time)}
