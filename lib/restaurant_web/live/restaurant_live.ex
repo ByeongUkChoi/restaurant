@@ -65,7 +65,7 @@ defmodule RestaurantWeb.RestaurantLive do
     id = to_integer_or(id_str)
     menu_id = to_integer_or(menu_id_str)
     menu = Orders.get_menu(menu_id)
-    CoffeeMachine.extract(id, menu)
+    CoffeeMachine.extract(menu, id)
 
     {:noreply, assign(socket, get_state())}
   end
