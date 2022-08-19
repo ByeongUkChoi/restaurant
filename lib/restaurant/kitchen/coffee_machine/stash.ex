@@ -58,6 +58,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Stash do
   end
 
   def handle_cast({:put_worker, id, menu, time}, %{workers: workers} = state) do
+    Phoenix.PubSub.broadcast(Restaurant.PubSub, "restaurant_live", :fetch_state)
     worker = %{id: id, menu: menu, time: time}
 
     workers =
