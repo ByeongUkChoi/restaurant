@@ -19,10 +19,6 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     end
   end
 
-  def state() do
-    Stash.state()
-  end
-
   defp get_worker_pid(id) do
     WorkerSupervisor
     |> Supervisor.which_children()
@@ -31,5 +27,13 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
       nil -> {:error, :not_found_worker}
       worker -> {:ok, worker}
     end
+  end
+
+  def state() do
+    Stash.state()
+  end
+
+  def add_material(material, amount) do
+    Stash.add_material(material, amount)
   end
 end

@@ -23,6 +23,10 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Stash do
     GenServer.call(__MODULE__, {:get_worker, id})
   end
 
+  def add_material(material, amount) do
+    GenServer.cast(__MODULE__, {:add_material, material, amount})
+  end
+
   def take_out_material(material, amount) do
     GenServer.call(__MODULE__, {:take_out_material, material, amount})
   end
@@ -55,6 +59,12 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Stash do
     else
       _ -> {:reply, :error, state}
     end
+  end
+
+  def handle_cast({:add_material, material, amount}, _from, state) do
+    remain_amount = state.materials |> Map.get(material, 0)
+    put_in(state, [:materials, material], remain_amount + amount)
+    {:noreply, state}
   end
 
   def handle_cast({:put_worker, id, menu, time}, %{workers: workers} = state) do

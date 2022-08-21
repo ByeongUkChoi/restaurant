@@ -56,6 +56,7 @@ defmodule RestaurantWeb.RestaurantLive do
     with %{price: price, amount: amount} <- material_price[material],
          true <- MoneyStorage.amount() >= amount,
          :ok <- MoneyStorage.subtract(price) do
+      CoffeeMachine.add_material(material, amount)
     end
 
     {:noreply, assign(socket, get_state())}

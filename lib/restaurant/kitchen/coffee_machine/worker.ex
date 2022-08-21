@@ -48,10 +48,10 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
     Process.send_after(self(), :put_stash, 0)
 
     remaining_time = state.time
+    update_time = if remaining_time - 1 > 0, do: remaining_time - 1, else: 0
 
-    if remaining_time > 0 do
+    if update_time > 0 do
       Process.send_after(self(), :timer, 1000)
-      update_time = if remaining_time - 1 > 0, do: remaining_time - 1, else: 0
       {:noreply, Map.put(state, :time, update_time)}
     else
       CompletedMenu.put(state.menu)
@@ -65,7 +65,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
   end
 
   def handle_cast({:extract, menu}, %{menu: nil} = state) do
-    Process.send_after(self(), :timer, 0)
+    Process.send_after(self(), :put_stash, 0)
+    Process.send_after(self(), :timer, 1000)
     {:noreply, state |> Map.put(:menu, menu) |> Map.put(:time, 5)}
   end
 
