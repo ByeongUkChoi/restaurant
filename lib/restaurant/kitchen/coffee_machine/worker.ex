@@ -24,8 +24,8 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
     {:ok, %{id: id, menu: nil, time: 0}}
   end
 
-  def terminate(_reason, _state) do
-    # TODO: auto restart
+  def terminate(_reason, state) do
+    Stash.put_worker(state.id, state.menu, state.time)
     :normal
   end
 
@@ -40,23 +40,29 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
     end
   end
 
+  def handle_info(:timer, %{menu: nil} = state) do
+    {:noreply, Map.put(state, :time, 0)}
+  end
+
+  def handle_info(:timer, %{time: 0} = state) do
+    Process.send_after(self(), :put_stash, 0)
+    CompletedMenu.put(state.menu)
+    Stash.put_worker(state.id, nil, state.time)
+    {:noreply, state |> Map.put(:menu, nil)}
+  end
+
   def handle_info(:timer, state) do
-    if Enum.random(1..2) == 3 do
+    if Enum.random(1..10) == 1 do
       raise "worker crash test!"
     end
 
-    Process.send_after(self(), :put_stash, 0)
+    Stash.put_worker(state.id, state.menu, state.time)
 
     remaining_time = state.time
     update_time = if remaining_time - 1 > 0, do: remaining_time - 1, else: 0
 
-    if update_time > 0 do
-      Process.send_after(self(), :timer, 1000)
-      {:noreply, Map.put(state, :time, update_time)}
-    else
-      CompletedMenu.put(state.menu)
-      {:noreply, state |> Map.put(:menu, nil) |> Map.put(:time, 0)}
-    end
+    Process.send_after(self(), :timer, 1000)
+    {:noreply, Map.put(state, :time, update_time)}
   end
 
   def handle_info(:put_stash, state) do
@@ -65,8 +71,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
   end
 
   def handle_cast({:extract, menu}, %{menu: nil} = state) do
-    Process.send_after(self(), :put_stash, 0)
-    Process.send_after(self(), :timer, 1000)
+    Process.send_after(self(), :timer, 0)
     {:noreply, state |> Map.put(:menu, menu) |> Map.put(:time, 5)}
   end
 
