@@ -54,16 +54,16 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Stash do
     with {:has_material, remain_amount} when remain_amount != nil <-
            {:has_material, remain_amount},
          {:enable_take_out, true} <- {:enable_take_out, remain_amount >= amount} do
-      put_in(state, [:materials, material], remain_amount - amount)
+      state = put_in(state, [:materials, material], remain_amount - amount)
       {:reply, :ok, state}
     else
       _ -> {:reply, :error, state}
     end
   end
 
-  def handle_cast({:add_material, material, amount}, _from, state) do
+  def handle_cast({:add_material, material, amount}, state) do
     remain_amount = state.materials |> Map.get(material, 0)
-    put_in(state, [:materials, material], remain_amount + amount)
+    state = put_in(state, [:materials, material], remain_amount + amount)
     {:noreply, state}
   end
 

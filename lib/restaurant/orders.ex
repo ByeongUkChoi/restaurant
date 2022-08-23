@@ -33,6 +33,10 @@ defmodule Restaurant.Orders do
     end
   end
 
+  def cancel_order(order_id) do
+    OrderedList.delete(order_id)
+  end
+
   def get_orders() do
     OrderedList.list()
   end

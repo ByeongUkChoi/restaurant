@@ -52,7 +52,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine.Worker do
   end
 
   def handle_info(:timer, state) do
-    if Enum.random(1..10) == 1 do
+    if Enum.random(1..10) == 10 do
       raise "worker crash test!"
     end
 

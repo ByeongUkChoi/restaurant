@@ -13,7 +13,7 @@ defmodule Restaurant.Kitchen.CoffeeMachine do
     with {:ok, worker} <- get_worker_pid(id) do
       @recipe
       |> Map.get(String.to_atom(menu.name))
-      |> Enum.map(fn {material, amount} -> Stash.take_out_material(material, amount) end)
+      |> Enum.each(fn {material, amount} -> Stash.take_out_material(material, amount) end)
 
       Worker.extract(menu, worker)
     end

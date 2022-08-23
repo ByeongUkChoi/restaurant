@@ -44,7 +44,12 @@ defmodule RestaurantWeb.RestaurantLive do
 
   def handle_event("cancel", %{"order_id" => order_id_str}, socket) do
     order_id = to_integer_or(order_id_str)
-    Orders.cancel_order(order_id, &MoneyStorage.subtract/1)
+    order = Orders.get_order(order_id)
+
+    if MoneyStorage.amount() >= order.menu.price do
+      Orders.cancel_order(order_id)
+      MoneyStorage.subtract(order.menu.price)
+    end
 
     {:noreply, assign(socket, get_state())}
   end
